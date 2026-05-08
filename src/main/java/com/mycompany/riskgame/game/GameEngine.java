@@ -76,6 +76,10 @@ public class GameEngine {
             return handleAttack(message);
         }
 
+        if (message.startsWith("BLITZ ")) {
+            return handleBlitz(message);
+        }
+
         if (message.startsWith("FORTIFY ")) {
             return handleFortify(message);
         }
@@ -95,7 +99,7 @@ public class GameEngine {
         if (turnManager.getPlayerCount() == 2) {
             gameMap.autoDistributeTerritories(turnManager.getPlayers());
             remainingDraftTroops = calculateDraftTroops(turnManager.getCurrentPlayer().getName());
-            
+
             System.out.println("Two players connected. Game can start!");;
             System.out.println("Territories distributed automatically.");
             System.out.println("Turn: " + turnManager.getCurrentPlayer().getName());
@@ -310,6 +314,48 @@ public class GameEngine {
 
         return "ATTACK_RESULT Attacker lost: " + attackerLosses + " Defender lost: " + defenderLosses;
 
+    }
+
+    private String handleBlitz(String message) {
+
+        if (currentPhase != GamePhase.ATTACK) {
+            return "NOT_ATTACK_PHASE";
+        }
+
+        String[] parts = message.split(" ");
+
+        if (parts.length < 3) {
+            return "INVALID_COMMAND";
+        }
+
+        while (true) {
+
+            String attackCommand = "ATTACK " + parts[1] + " " + parts[2];
+            String result = handleAttack(attackCommand);
+
+            if (result.equals("TERRITORY_CAPTURED")) {
+                return "BLITZ_SUCCESS";
+            }
+
+            if (result.startsWith("GAME_OVER")) {
+                return result;
+            }
+
+            Territory attacker = gameMap.findTerritoryByName(parts[1]);
+            Territory defender = gameMap.findTerritoryByName(parts[2]);
+
+            if (attacker == null || defender == null) {
+                return "INVALID_TERRITORY";
+            }
+
+            if (attacker.getOwner().equals(defender.getOwner())) {
+                return "BLITZ_SUCCESS";
+            }
+
+            if (attacker.getTroops() < 2) {
+                return "BLITZ_FAILED";
+            }
+        }
     }
 
     private String handleFortify(String message) {
