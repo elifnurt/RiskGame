@@ -93,7 +93,10 @@ public class GameEngine {
         System.out.println("Total players: " + turnManager.getPlayerCount());
 
         if (turnManager.getPlayerCount() == 2) {
+            gameMap.autoDistributeTerritories(turnManager.getPlayers());
+
             System.out.println("Two players connected. Game can start!");
+            System.out.println("Territories distributed automatically.");
             System.out.println("Turn: " + turnManager.getCurrentPlayer().getName());
 
             return "GAME_START Turn: " + turnManager.getCurrentPlayer().getName();

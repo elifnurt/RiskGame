@@ -7,6 +7,8 @@ package com.mycompany.riskgame.map;
 import com.mycompany.riskgame.model.Territory;
 import java.util.ArrayList;
 import java.util.List;
+import com.mycompany.riskgame.model.Player;
+import java.util.Collections;
 
 public class GameMap {
 
@@ -64,24 +66,6 @@ public class GameMap {
     easternUS.addNeighbor(quebec);
     easternUS.addNeighbor(westernUS);
 
-    alaska.setOwner("Elif");
-    alberta.setOwner("Oyuncu2");
-    northwestTerritory.setOwner("Elif");
-    greenland.setOwner("Oyuncu2");
-    ontario.setOwner("Elif");
-    quebec.setOwner("Oyuncu2");
-    westernUS.setOwner("Elif");
-    easternUS.setOwner("Oyuncu2");
-
-    alaska.addTroops(5);
-    alberta.addTroops(5);
-    northwestTerritory.addTroops(5);
-    greenland.addTroops(5);
-    ontario.addTroops(5);
-    quebec.addTroops(5);
-    westernUS.addTroops(5);
-    easternUS.addTroops(5);
-
     territories.add(alaska);
     territories.add(alberta);
     territories.add(northwestTerritory);
@@ -103,6 +87,18 @@ public class GameMap {
 
         return null;
     }
+    
+    public void autoDistributeTerritories(List<Player> players) {
+
+    Collections.shuffle(territories);
+
+    for (int i = 0; i < territories.size(); i++) {
+        Player owner = players.get(i % players.size());
+
+        territories.get(i).setOwner(owner.getName());
+        territories.get(i).addTroops(1);
+    }
+}
 
     public List<Territory> getTerritories() {
         return territories;
