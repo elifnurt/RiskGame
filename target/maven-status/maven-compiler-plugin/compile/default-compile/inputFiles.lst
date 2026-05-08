@@ -1,0 +1,12 @@
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/command/CommandHandler.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/game/TurnManager.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/server/ClientHandler.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/model/Territory.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/game/GameEngine.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/network/Message.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/server/ServerMain.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/map/GameMap.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/RiskGame.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/model/Player.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/game/GamePhase.java
+/Users/elifnur/NetBeansProjects/RiskGame/src/main/java/com/mycompany/riskgame/client/ClientMain.java
