@@ -61,4 +61,30 @@ public class Territory {
 
     return neighbors.contains(territory);
 }
+    
+    public boolean hasPathTo(Territory target, String owner) {
+    return hasPathToHelper(target, owner, new ArrayList<>());
+}
+
+private boolean hasPathToHelper(Territory target, String owner, List<Territory> visited) {
+
+    if (this == target) {
+        return true;
+    }
+
+    visited.add(this);
+
+    for (Territory neighbor : neighbors) {
+
+        if (!visited.contains(neighbor)
+                && neighbor.getOwner().equals(owner)) {
+
+            if (neighbor.hasPathToHelper(target, owner, visited)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 }

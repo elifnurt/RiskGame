@@ -8,6 +8,7 @@ import com.mycompany.riskgame.map.GameMap;
 import com.mycompany.riskgame.model.Player;
 import com.mycompany.riskgame.model.Territory;
 import java.util.Random;
+import java.util.Arrays;
 
 public class GameEngine {
 
@@ -238,52 +239,73 @@ public class GameEngine {
         if (attackerTerritory.getTroops() < 2) {
             return "NOT_ENOUGH_TROOPS";
         }
+        int attackerDiceCount = Math.min(3, attackerTerritory.getTroops() - 1);
+        int defenderDiceCount = Math.min(2, defenderTerritory.getTroops());
 
-        int attackerDice = random.nextInt(6) + 1;
-        int defenderDice = random.nextInt(6) + 1;
+        int[] attackerDice = new int[attackerDiceCount];
+        int[] defenderDice = new int[defenderDiceCount];
+
+        for (int i = 0; i < attackerDiceCount; i++) {
+            attackerDice[i] = random.nextInt(6) + 1;
+        }
+
+        for (int i = 0; i < defenderDiceCount; i++) {
+            defenderDice[i] = random.nextInt(6) + 1;
+        }
+
+        Arrays.sort(attackerDice);
+        Arrays.sort(defenderDice);
 
         System.out.println(attackerTerritory.getName() + " attacks " + defenderTerritory.getName());
-        System.out.println("Attacker dice: " + attackerDice);
-        System.out.println("Defender dice: " + defenderDice);
+        System.out.println("Attacker dice: " + Arrays.toString(attackerDice));
+        System.out.println("Defender dice: " + Arrays.toString(defenderDice));
 
-        if (attackerDice > defenderDice) {
-            defenderTerritory.removeTroops(1);
+        int comparisons = Math.min(attackerDiceCount, defenderDiceCount);
+        int attackerLosses = 0;
+        int defenderLosses = 0;
 
-            System.out.println("Attacker wins this roll!");
-            System.out.println(defenderTerritory.getName() + " troops left: " + defenderTerritory.getTroops());
+        for (int i = 0; i < comparisons; i++) {
+            int attackerRoll = attackerDice[attackerDice.length - 1 - i];
+            int defenderRoll = defenderDice[defenderDice.length - 1 - i];
 
-            if (defenderTerritory.getTroops() <= 0) {
-                String oldOwner = defenderTerritory.getOwner();
-                String newOwner = attackerTerritory.getOwner();
+            if (attackerRoll > defenderRoll) {
+                defenderLosses++;
+            } else {
+                attackerLosses++;
+            }
+        }
 
-                defenderTerritory.setOwner(newOwner);
+        attackerTerritory.removeTroops(attackerLosses);
+        defenderTerritory.removeTroops(defenderLosses);
 
-                attackerTerritory.removeTroops(1);
-                defenderTerritory.addTroops(1);
+        System.out.println("Attacker losses: " + attackerLosses);
+        System.out.println("Defender losses: " + defenderLosses);
+        System.out.println(attackerTerritory.getName() + " troops left: " + attackerTerritory.getTroops());
+        System.out.println(defenderTerritory.getName() + " troops left: " + defenderTerritory.getTroops());
 
-                System.out.println(defenderTerritory.getName() + " captured!");
-                System.out.println("Old owner: " + oldOwner);
-                System.out.println("New owner: " + newOwner);
-                System.out.println(attackerTerritory.getName() + " troops left: " + attackerTerritory.getTroops());
-                System.out.println(defenderTerritory.getName() + " troops now: " + defenderTerritory.getTroops());
+        if (defenderTerritory.getTroops() <= 0) {
+            String oldOwner = defenderTerritory.getOwner();
+            String newOwner = attackerTerritory.getOwner();
 
-                if (checkWinner(newOwner)) {
-                    gameOver = true;
-                    return "GAME_OVER Winner: " + newOwner;
-                }
+            defenderTerritory.setOwner(newOwner);
 
-                return "TERRITORY_CAPTURED";
+            attackerTerritory.removeTroops(1);
+            defenderTerritory.addTroops(1);
+
+            System.out.println(defenderTerritory.getName() + " captured!");
+            System.out.println("Old owner: " + oldOwner);
+            System.out.println("New owner: " + newOwner);
+
+            if (checkWinner(newOwner)) {
+                gameOver = true;
+                return "GAME_OVER Winner: " + newOwner;
             }
 
-            return "ATTACKER_WINS_ROLL";
-        } else {
-            attackerTerritory.removeTroops(1);
-
-            System.out.println("Defender wins this roll!");
-            System.out.println(attackerTerritory.getName() + " troops left: " + attackerTerritory.getTroops());
-
-            return "DEFENDER_WINS_ROLL";
+            return "TERRITORY_CAPTURED";
         }
+
+        return "ATTACK_RESULT Attacker lost: " + attackerLosses + " Defender lost: " + defenderLosses;
+
     }
 
     private String handleFortify(String message) {
@@ -338,8 +360,8 @@ public class GameEngine {
             return "TARGET_NOT_YOURS";
         }
 
-        if (!fromTerritory.isNeighbor(toTerritory)) {
-            return "NOT_NEIGHBORS";
+        if (!fromTerritory.hasPathTo(toTerritory, currentPlayer)) {
+            return "NO_CONNECTED_PATH";
         }
 
         if (fromTerritory.getTroops() <= troopAmount) {
@@ -364,31 +386,31 @@ public class GameEngine {
     }
 
     private String handleMap() {
-    StringBuilder mapInfo = new StringBuilder();
+        StringBuilder mapInfo = new StringBuilder();
 
-    mapInfo.append("======== MAP ========\n");
+        mapInfo.append("======== MAP ========\n");
 
-    for (Territory territory : gameMap.getTerritories()) {
-        mapInfo.append("\n");
-        mapInfo.append("Territory: ").append(territory.getName()).append("\n");
-        mapInfo.append("Owner: ").append(territory.getOwner()).append("\n");
-        mapInfo.append("Troops: ").append(territory.getTroops()).append("\n");
+        for (Territory territory : gameMap.getTerritories()) {
+            mapInfo.append("\n");
+            mapInfo.append("Territory: ").append(territory.getName()).append("\n");
+            mapInfo.append("Owner: ").append(territory.getOwner()).append("\n");
+            mapInfo.append("Troops: ").append(territory.getTroops()).append("\n");
 
-        mapInfo.append("Neighbors: ");
+            mapInfo.append("Neighbors: ");
 
-        for (Territory neighbor : territory.getNeighbors()) {
-            mapInfo.append(neighbor.getName()).append(" ");
+            for (Territory neighbor : territory.getNeighbors()) {
+                mapInfo.append(neighbor.getName()).append(" ");
+            }
+
+            mapInfo.append("\n");
         }
 
-        mapInfo.append("\n");
+        mapInfo.append("=====================");
+
+        System.out.println(mapInfo.toString());
+
+        return mapInfo.toString().replace("\n", " | ");
     }
-
-    mapInfo.append("=====================");
-
-    System.out.println(mapInfo.toString());
-
-    return mapInfo.toString().replace("\n", " | ");
-}
 
     private boolean checkWinner(String playerName) {
 
