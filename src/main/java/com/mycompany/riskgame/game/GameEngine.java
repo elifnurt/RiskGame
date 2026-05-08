@@ -364,27 +364,31 @@ public class GameEngine {
     }
 
     private String handleMap() {
-        System.out.println("======== MAP ========");
+    StringBuilder mapInfo = new StringBuilder();
 
-        for (Territory territory : gameMap.getTerritories()) {
-            System.out.println();
-            System.out.println("Territory: " + territory.getName());
-            System.out.println("Owner: " + territory.getOwner());
-            System.out.println("Troops: " + territory.getTroops());
+    mapInfo.append("======== MAP ========\n");
 
-            System.out.print("Neighbors: ");
+    for (Territory territory : gameMap.getTerritories()) {
+        mapInfo.append("\n");
+        mapInfo.append("Territory: ").append(territory.getName()).append("\n");
+        mapInfo.append("Owner: ").append(territory.getOwner()).append("\n");
+        mapInfo.append("Troops: ").append(territory.getTroops()).append("\n");
 
-            for (Territory neighbor : territory.getNeighbors()) {
-                System.out.print(neighbor.getName() + " ");
-            }
+        mapInfo.append("Neighbors: ");
 
-            System.out.println();
+        for (Territory neighbor : territory.getNeighbors()) {
+            mapInfo.append(neighbor.getName()).append(" ");
         }
 
-        System.out.println("=====================");
-
-        return "MAP_PRINTED_ON_SERVER";
+        mapInfo.append("\n");
     }
+
+    mapInfo.append("=====================");
+
+    System.out.println(mapInfo.toString());
+
+    return mapInfo.toString().replace("\n", " | ");
+}
 
     private boolean checkWinner(String playerName) {
 

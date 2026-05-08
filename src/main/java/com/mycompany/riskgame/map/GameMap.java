@@ -19,29 +19,78 @@ public class GameMap {
 
     private void setupMap() {
 
-        Territory alaska = new Territory("Alaska");
-        Territory alberta = new Territory("Alberta");
-        Territory ontario = new Territory("Ontario");
+    Territory alaska = new Territory("Alaska");
+    Territory alberta = new Territory("Alberta");
+    Territory northwestTerritory = new Territory("NorthwestTerritory");
+    Territory greenland = new Territory("Greenland");
+    Territory ontario = new Territory("Ontario");
+    Territory quebec = new Territory("Quebec");
+    Territory westernUS = new Territory("WesternUS");
+    Territory easternUS = new Territory("EasternUS");
 
-        alaska.addNeighbor(alberta);
-        alaska.addNeighbor(ontario);
+    alaska.addNeighbor(alberta);
+    alaska.addNeighbor(northwestTerritory);
 
-        alberta.addNeighbor(alaska);
+    alberta.addNeighbor(alaska);
+    alberta.addNeighbor(northwestTerritory);
+    alberta.addNeighbor(ontario);
+    alberta.addNeighbor(westernUS);
 
-        ontario.addNeighbor(alaska);
+    northwestTerritory.addNeighbor(alaska);
+    northwestTerritory.addNeighbor(alberta);
+    northwestTerritory.addNeighbor(ontario);
+    northwestTerritory.addNeighbor(greenland);
 
-        alaska.setOwner("Elif");
-        alberta.setOwner("Oyuncu2");
-        ontario.setOwner("Elif");
+    greenland.addNeighbor(northwestTerritory);
+    greenland.addNeighbor(ontario);
+    greenland.addNeighbor(quebec);
 
-        alaska.addTroops(20);
-        alberta.addTroops(5);
-        ontario.addTroops(3);
+    ontario.addNeighbor(alberta);
+    ontario.addNeighbor(northwestTerritory);
+    ontario.addNeighbor(greenland);
+    ontario.addNeighbor(quebec);
+    ontario.addNeighbor(westernUS);
+    ontario.addNeighbor(easternUS);
 
-        territories.add(alaska);
-        territories.add(alberta);
-        territories.add(ontario);
-    }
+    quebec.addNeighbor(greenland);
+    quebec.addNeighbor(ontario);
+    quebec.addNeighbor(easternUS);
+
+    westernUS.addNeighbor(alberta);
+    westernUS.addNeighbor(ontario);
+    westernUS.addNeighbor(easternUS);
+
+    easternUS.addNeighbor(ontario);
+    easternUS.addNeighbor(quebec);
+    easternUS.addNeighbor(westernUS);
+
+    alaska.setOwner("Elif");
+    alberta.setOwner("Oyuncu2");
+    northwestTerritory.setOwner("Elif");
+    greenland.setOwner("Oyuncu2");
+    ontario.setOwner("Elif");
+    quebec.setOwner("Oyuncu2");
+    westernUS.setOwner("Elif");
+    easternUS.setOwner("Oyuncu2");
+
+    alaska.addTroops(5);
+    alberta.addTroops(5);
+    northwestTerritory.addTroops(5);
+    greenland.addTroops(5);
+    ontario.addTroops(5);
+    quebec.addTroops(5);
+    westernUS.addTroops(5);
+    easternUS.addTroops(5);
+
+    territories.add(alaska);
+    territories.add(alberta);
+    territories.add(northwestTerritory);
+    territories.add(greenland);
+    territories.add(ontario);
+    territories.add(quebec);
+    territories.add(westernUS);
+    territories.add(easternUS);
+}
 
     public Territory findTerritoryByName(String name) {
 
