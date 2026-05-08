@@ -94,8 +94,9 @@ public class GameEngine {
 
         if (turnManager.getPlayerCount() == 2) {
             gameMap.autoDistributeTerritories(turnManager.getPlayers());
-
-            System.out.println("Two players connected. Game can start!");
+            remainingDraftTroops = calculateDraftTroops(turnManager.getCurrentPlayer().getName());
+            
+            System.out.println("Two players connected. Game can start!");;
             System.out.println("Territories distributed automatically.");
             System.out.println("Turn: " + turnManager.getCurrentPlayer().getName());
 
@@ -117,7 +118,7 @@ public class GameEngine {
 
         Player nextPlayer = turnManager.nextTurn();
         currentPhase = GamePhase.DRAFT;
-        remainingDraftTroops = 3;
+        remainingDraftTroops = calculateDraftTroops(nextPlayer.getName());
         fortifyUsed = false;
 
         System.out.println("Turn: " + nextPlayer.getName());
@@ -413,6 +414,48 @@ public class GameEngine {
         System.out.println(mapInfo.toString());
 
         return mapInfo.toString().replace("\n", " | ");
+    }
+
+    private int calculateDraftTroops(String playerName) {
+
+        int ownedTerritories = 0;
+
+        for (Territory territory : gameMap.getTerritories()) {
+            if (territory.getOwner().equals(playerName)) {
+                ownedTerritories++;
+            }
+        }
+
+        int troopsFromTerritories = ownedTerritories / 3;
+        int baseTroops = Math.max(3, troopsFromTerritories);
+
+        int continentBonus = calculateContinentBonus(playerName);
+
+        return baseTroops + continentBonus;
+    }
+
+    private int calculateContinentBonus(String playerName) {
+
+        String[] northAmerica = {
+            "Alaska",
+            "Alberta",
+            "NorthwestTerritory",
+            "Greenland",
+            "Ontario",
+            "Quebec",
+            "WesternUS",
+            "EasternUS"
+        };
+
+        for (String territoryName : northAmerica) {
+            Territory territory = gameMap.findTerritoryByName(territoryName);
+
+            if (territory == null || !territory.getOwner().equals(playerName)) {
+                return 0;
+            }
+        }
+
+        return 5;
     }
 
     private boolean checkWinner(String playerName) {
