@@ -21,60 +21,84 @@ public class GameMap {
 
     private void setupMap() {
 
-    Territory alaska = new Territory("Alaska");
-    Territory alberta = new Territory("Alberta");
-    Territory northwestTerritory = new Territory("NorthwestTerritory");
-    Territory greenland = new Territory("Greenland");
-    Territory ontario = new Territory("Ontario");
-    Territory quebec = new Territory("Quebec");
-    Territory westernUS = new Territory("WesternUS");
-    Territory easternUS = new Territory("EasternUS");
+        Territory olympus = new Territory("Olympus");
+        Territory sparta = new Territory("Sparta");
+        Territory athens = new Territory("Athens");
+        Territory delphi = new Territory("Delphi");
+        Territory arcadia = new Territory("Arcadia");
+        Territory troy = new Territory("Troy");
+        Territory elysium = new Territory("Elysium");
+        Territory mycenae = new Territory("Mycenae");
+        Territory rhodes = new Territory("Rhodes");
+        Territory corinth = new Territory("Corinth");
+        Territory crete = new Territory("Crete");
+        Territory olympia = new Territory("Olympia");
 
-    alaska.addNeighbor(alberta);
-    alaska.addNeighbor(northwestTerritory);
+        olympus.addNeighbor(sparta);
+        olympus.addNeighbor(delphi);
+        
+        sparta.addNeighbor(olympus);
+        sparta.addNeighbor(athens);
+        sparta.addNeighbor(delphi);
+        
+        athens.addNeighbor(sparta);
+        athens.addNeighbor(delphi);
 
-    alberta.addNeighbor(alaska);
-    alberta.addNeighbor(northwestTerritory);
-    alberta.addNeighbor(ontario);
-    alberta.addNeighbor(westernUS);
+        delphi.addNeighbor(olympus);
+        delphi.addNeighbor(sparta);
+        delphi.addNeighbor(athens);
+        
+        arcadia.addNeighbor(troy);
+        
+        troy.addNeighbor(arcadia);
+        troy.addNeighbor(elysium);
+        
+        elysium.addNeighbor(troy);
+        elysium.addNeighbor(mycenae);
+        
+        mycenae.addNeighbor(elysium);
+          
+        rhodes.addNeighbor(corinth);
+        rhodes.addNeighbor(crete);
+  
+        corinth.addNeighbor(rhodes);
+        corinth.addNeighbor(crete);
+        corinth.addNeighbor(olympia);
+        
+        crete.addNeighbor(rhodes);
+        crete.addNeighbor(corinth);
+        crete.addNeighbor(olympia);
+ 
+        olympia.addNeighbor(corinth);
+        olympia.addNeighbor(crete);
+        
+        // --- ADALAR ARASI DENİZ YOLU BAĞLANTILARI ---
+        
+        // Sol Üst ile Sol Alt bağlantısı
+        athens.addNeighbor(arcadia);
+        arcadia.addNeighbor(athens);
+        
+        // Sol Üst ile Sağ bağlantısı
+        delphi.addNeighbor(olympia);
+        olympia.addNeighbor(delphi);
+        
+        // Sol Alt ile Sağ bağlantısı
+        mycenae.addNeighbor(rhodes);
+        rhodes.addNeighbor(mycenae);
 
-    northwestTerritory.addNeighbor(alaska);
-    northwestTerritory.addNeighbor(alberta);
-    northwestTerritory.addNeighbor(ontario);
-    northwestTerritory.addNeighbor(greenland);
-
-    greenland.addNeighbor(northwestTerritory);
-    greenland.addNeighbor(ontario);
-    greenland.addNeighbor(quebec);
-
-    ontario.addNeighbor(alberta);
-    ontario.addNeighbor(northwestTerritory);
-    ontario.addNeighbor(greenland);
-    ontario.addNeighbor(quebec);
-    ontario.addNeighbor(westernUS);
-    ontario.addNeighbor(easternUS);
-
-    quebec.addNeighbor(greenland);
-    quebec.addNeighbor(ontario);
-    quebec.addNeighbor(easternUS);
-
-    westernUS.addNeighbor(alberta);
-    westernUS.addNeighbor(ontario);
-    westernUS.addNeighbor(easternUS);
-
-    easternUS.addNeighbor(ontario);
-    easternUS.addNeighbor(quebec);
-    easternUS.addNeighbor(westernUS);
-
-    territories.add(alaska);
-    territories.add(alberta);
-    territories.add(northwestTerritory);
-    territories.add(greenland);
-    territories.add(ontario);
-    territories.add(quebec);
-    territories.add(westernUS);
-    territories.add(easternUS);
-}
+        territories.add(olympus);
+        territories.add(sparta);
+        territories.add(athens);
+        territories.add(delphi);
+        territories.add(arcadia);
+        territories.add(troy);
+        territories.add(elysium);
+        territories.add(mycenae);
+        territories.add(rhodes);
+        territories.add(corinth);
+        territories.add(crete);
+        territories.add(olympia);
+    }
 
     public Territory findTerritoryByName(String name) {
 
