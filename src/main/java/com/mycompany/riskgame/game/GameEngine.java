@@ -88,26 +88,22 @@ public class GameEngine {
     }
 
     private String handleJoin(String message) {
-        String playerName = message.substring(5);
+        String[] parts = message.split(" ");
+        if (parts.length < 2) {
+            return "ERROR: Invalid name";
+        }
 
+        String playerName = parts[1];
         Player player = new Player(playerName);
         turnManager.addPlayer(player);
 
-        System.out.println("Player joined: " + playerName);
-        System.out.println("Total players: " + turnManager.getPlayerCount());
-
+        // Eğer 2 oyuncu olduysa, bölgeleri otomatik dağıt!
         if (turnManager.getPlayerCount() == 2) {
             gameMap.autoDistributeTerritories(turnManager.getPlayers());
-            remainingDraftTroops = calculateDraftTroops(turnManager.getCurrentPlayer().getName());
-
-            System.out.println("Two players connected. Game can start!");;
-            System.out.println("Territories distributed automatically.");
-            System.out.println("Turn: " + turnManager.getCurrentPlayer().getName());
-
-            return "GAME_START Turn: " + turnManager.getCurrentPlayer().getName();
+            return "SUCCESS: Game started and territories distributed!";
         }
 
-        return "WELCOME " + playerName;
+        return "SUCCESS: Joined as " + playerName;
     }
 
     private String handleEndTurn() {
@@ -436,30 +432,22 @@ public class GameEngine {
     }
 
     private String handleMap() {
-        StringBuilder mapInfo = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        // Haritadaki tüm bölgeleri dön
+        for (Territory t : gameMap.getTerritories()) {
+            sb.append(t.getName()).append(":");
 
-        mapInfo.append("======== MAP ========\n");
-
-        for (Territory territory : gameMap.getTerritories()) {
-            mapInfo.append("\n");
-            mapInfo.append("Territory: ").append(territory.getName()).append("\n");
-            mapInfo.append("Owner: ").append(territory.getOwner()).append("\n");
-            mapInfo.append("Troops: ").append(territory.getTroops()).append("\n");
-
-            mapInfo.append("Neighbors: ");
-
-            for (Territory neighbor : territory.getNeighbors()) {
-                mapInfo.append(neighbor.getName()).append(" ");
+            // Eğer sahibi yoksa "NONE" yaz, varsa sahibinin adını yaz
+            if (t.getOwner() == null) {
+                sb.append("NONE");
+            } else {
+                sb.append(t.getOwner());
             }
 
-            mapInfo.append("\n");
+            sb.append(":").append(t.getTroops()).append("|");
         }
-
-        mapInfo.append("=====================");
-
-        System.out.println(mapInfo.toString());
-
-        return mapInfo.toString().replace("\n", " | ");
+        // Örnek Çıktı: "Olympus:NONE:0|Sparta:Player1:3|"
+        return sb.toString();
     }
 
     private int calculateDraftTroops(String playerName) {
@@ -481,27 +469,39 @@ public class GameEngine {
     }
 
     private int calculateContinentBonus(String playerName) {
+        int totalBonus = 0;
 
-        String[] northAmerica = {
-            "Alaska",
-            "Alberta",
-            "NorthwestTerritory",
-            "Greenland",
-            "Ontario",
-            "Quebec",
-            "WesternUS",
-            "EasternUS"
-        };
-
-        for (String territoryName : northAmerica) {
-            Territory territory = gameMap.findTerritoryByName(territoryName);
-
-            if (territory == null || !territory.getOwner().equals(playerName)) {
-                return 0;
-            }
+        // 1. Kıta: Kuzey Yunanistan (Sol Üst Ada)
+        String[] northernGreece = {"Olympus", "Delphi", "Sparta", "Athens"};
+        if (ownsContinent(playerName, northernGreece)) {
+            totalBonus += 3; // Bu kıtanın tamamına sahipse +3 asker
         }
 
-        return 5;
+        // 2. Kıta: Truva ve Çevresi (Sol Alt Ada)
+        String[] troyRegion = {"Arcadia", "Troy", "Elysium", "Mycenae"};
+        if (ownsContinent(playerName, troyRegion)) {
+            totalBonus += 3;
+        }
+
+        // 3. Kıta: Adalar ve Güney (Sağ Ada)
+        String[] islandsRegion = {"Rhodes", "Corinth", "Crete", "Olympia"};
+        if (ownsContinent(playerName, islandsRegion)) {
+            totalBonus += 3;
+        }
+
+        return totalBonus;
+    }
+
+    // Kıta kontrolünü kolaylaştırmak için yardımcı metod (Bunu da GameEngine içine ekle)
+    private boolean ownsContinent(String playerName, String[] continentTerritories) {
+        for (String territoryName : continentTerritories) {
+            Territory territory = gameMap.findTerritoryByName(territoryName);
+            // Eğer bölge bulunamazsa veya sahibi bu oyuncu değilse kıtaya sahip değildir
+            if (territory == null || territory.getOwner() == null || !territory.getOwner().equals(playerName)) {
+                return false;
+            }
+        }
+        return true; // Tüm bölgeler oyuncununsa true döner
     }
 
     private boolean checkWinner(String playerName) {
