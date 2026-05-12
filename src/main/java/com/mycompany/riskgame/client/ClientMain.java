@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import com.mycompany.riskgame.gui.StartFrame;
 
 public class ClientMain {
 
@@ -13,56 +14,79 @@ public class ClientMain {
     private static final int PORT = 5050;
 
     public static void main(String[] args) {
-
-        try {
-            Socket socket = new Socket(HOST, PORT);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
-            System.out.println("Sistem: Sunucuya başarıyla bağlanıldı!");
-
-            String playerName = javax.swing.JOptionPane.showInputDialog("Lütfen adınızı girin:");
-            if (playerName == null || playerName.trim().isEmpty()) {
-                playerName = "Player_" + System.currentTimeMillis() % 1000;
-            }
-
-            GameFrame frame = new GameFrame();
-
-            frame.setPrintWriter(out);
-            frame.setCurrentPlayer(playerName);
-            frame.setTitle("Risk Game - " + playerName);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            StartFrame frame = new StartFrame();
+            frame.setTitle("Ancient Greek Risk Game");
+            frame.setLocationRelativeTo(null);
+            frame.setResizable(false);
             frame.setVisible(true);
-            frame.startGameScreen();
+        });
+    }
 
-            out.println("JOIN " + playerName);
-            out.println("MAP");
+    public static void startClient(String playerName, String host, int port, javax.swing.JFrame startFrame) {
+        new Thread(() -> {
+            try {
+                Socket socket = new Socket(host, port);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            String serverMessage;
-            while ((serverMessage = in.readLine()) != null) {
-                if (serverMessage.startsWith("MAP_UPDATE:")) {
-                    String mapData = serverMessage.substring(11);
+                GameFrame frame = new GameFrame();
 
-                    javax.swing.SwingUtilities.invokeLater(()
-                            -> frame.updateMapFromServer(mapData)
-                    );
-                } else if (serverMessage.startsWith("RESPONSE:")) {
-                    String response = serverMessage.substring(9);
+                frame.setPrintWriter(out);
+                frame.setCurrentPlayer(playerName);
+                frame.setTitle("Risk Game - " + playerName);
 
-                    javax.swing.SwingUtilities.invokeLater(()
-                            -> frame.handleServerResponse(response)
-                    );
-                } else {
-                    frame.appendGameLog(serverMessage);
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    startFrame.dispose();
+                    frame.setLocationRelativeTo(null);
+                    frame.setVisible(true);
+                    frame.startGameScreen();
+                });
+
+                out.println("JOIN " + playerName);
+                out.println("MAP");
+
+                String serverMessage;
+
+                while ((serverMessage = in.readLine()) != null) {
+                    final String message = serverMessage;
+
+                    if (message.startsWith("GAME_UPDATE:")) {
+                        String gameData = message.substring(12);
+
+                        javax.swing.SwingUtilities.invokeLater(()
+                                -> frame.updateGameFromServer(gameData)
+                        );
+
+                    } else if (message.startsWith("RESPONSE:")) {
+                        String response = message.substring(9);
+
+                        javax.swing.SwingUtilities.invokeLater(()
+                                -> frame.handleServerResponse(response)
+                        );
+
+                    } else {
+                        javax.swing.SwingUtilities.invokeLater(()
+                                -> frame.appendGameLog(message)
+                        );
+                    }
                 }
-            }
 
-        } catch (IOException e) {
-            javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    "Server connection failed.",
-                    "Connection Error",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
-        }
+            } catch (IOException e) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+
+                    javax.swing.JOptionPane.showMessageDialog(
+                            startFrame,
+                            "Server connection failed.",
+                            "Connection Error",
+                            javax.swing.JOptionPane.ERROR_MESSAGE
+                    );
+
+                    if (startFrame instanceof com.mycompany.riskgame.gui.StartFrame frame) {
+                        frame.resetConnectionButton();
+                    }
+                });
+            }
+        }).start();
     }
 }

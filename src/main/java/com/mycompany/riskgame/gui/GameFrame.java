@@ -14,10 +14,22 @@ import java.util.Map;
  * @author elifnur
  */
 public class GameFrame extends javax.swing.JFrame {
+    
+    public static void main(String[] args) {
+    java.awt.EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            GameFrame frame = new GameFrame();
+            frame.setTitle("Risk Game - Preview");
+            frame.setVisible(true);
+            frame.startGameScreen();
+        }
+    });
+}
+
 
     private java.io.PrintWriter out;
-    private GamePhase currentPhase = GamePhase.DRAFT;
-    private int remainingDraftTroops = 3;
+    private GamePhase currentPhase = GamePhase.WAITING_FOR_PLAYERS;
+    private int remainingDraftTroops = 0;
     private String fromTerritory = null;
     private String toTerritory = null;
     private String selectedTerritory;
@@ -63,7 +75,6 @@ public class GameFrame extends javax.swing.JFrame {
         territoryButton10 = new javax.swing.JButton();
         territoryButton11 = new javax.swing.JButton();
         territoryButton12 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         statusArea = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -174,9 +185,6 @@ public class GameFrame extends javax.swing.JFrame {
             }
         });
         jPanel1.add(territoryButton12, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 140, -1, 200));
-
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/dice-cube.png"))); // NOI18N
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1280, 410, 120, 110));
 
         statusArea.setColumns(20);
         statusArea.setRows(5);
@@ -296,13 +304,13 @@ public class GameFrame extends javax.swing.JFrame {
     }
 
     private void initializeGameScreen() {
-        currentPhase = GamePhase.DRAFT;
-        remainingDraftTroops = 3;
+        currentPhase = GamePhase.WAITING_FOR_PLAYERS;
+        remainingDraftTroops = 0;
+        actionButton.setText("Waiting");
+        actionButton.setEnabled(false);
 
         troopCounts.clear();
         territoryOwners.clear();
-
-        actionButton.setText("Go To Attack Phase");
 
         updateStatusArea();
         updateTerritoryTexts();
@@ -525,72 +533,15 @@ public class GameFrame extends javax.swing.JFrame {
         gameLogArea.setCaretPosition(gameLogArea.getDocument().getLength());
     }
 
-    private int extractLastNumber(String text) {
-        String[] parts = text.split(" ");
-
-        for (int i = parts.length - 1; i >= 0; i--) {
-            try {
-                return Integer.parseInt(parts[i]);
-            } catch (NumberFormatException e) {
-
-            }
-        }
-
-        return 0;
-    }
-
     public void handleServerResponse(String response) {
         appendGameLog(response);
 
-        if (response.startsWith("DRAFT_SUCCESS")) {
-            String[] parts = response.split(": ");
-
-            if (parts.length == 2) {
-                try {
-                    remainingDraftTroops = Integer.parseInt(parts[1]);
-                } catch (NumberFormatException e) {
-                    appendGameLog("Draft troop sayısı okunamadı.");
-                }
-            }
-
-            sendCommand("MAP");
-
-        } else if (response.startsWith("DRAFT_NOT_FINISHED")) {
+        if (response.startsWith("DRAFT_NOT_FINISHED")) {
             appendGameLog("Önce bütün draft askerlerini yerleştirmelisin.");
-
-        } else if (response.equals("PHASE_ATTACK")) {
-            currentPhase = GamePhase.ATTACK;
-            clearSelection();
-            actionButton.setText("Go To Fortify Phase");
-            appendGameLog("Attack phase başladı.");
-
-        } else if (response.equals("PHASE_FORTIFY")) {
-            currentPhase = GamePhase.FORTIFY;
-            clearSelection();
-            actionButton.setText("End Turn");
-            appendGameLog("Fortify phase başladı.");
-
-        } else if (response.startsWith("TURN ") || response.contains(" TURN ")) {
-            currentPhase = GamePhase.DRAFT;
-            remainingDraftTroops = extractLastNumber(response);
-            clearSelection();
-            actionButton.setText("Go To Attack Phase");
-
-            String turnText = response.substring(response.indexOf("TURN ") + 5);
-            appendGameLog("Sıra: " + turnText);
-
-            sendCommand("MAP");
-
-        } else if (response.startsWith("ATTACK_RESULT")
-                || response.equals("TERRITORY_CAPTURED")
-                || response.equals("BLITZ_SUCCESS")) {
-            clearSelection();
-            sendCommand("MAP");
-
-        } else if (response.equals("FORTIFY_SUCCESS")) {
-            clearSelection();
-            sendCommand("MAP");
-
+        } else if (response.equals("WAITING_FOR_PLAYERS")) {
+            appendGameLog("İkinci oyuncu bekleniyor.");
+        } else if (response.equals("NOT_YOUR_TURN")) {
+            appendGameLog("Şu an senin sıran değil.");
         } else if (response.startsWith("GAME_OVER")) {
             javax.swing.JOptionPane.showMessageDialog(this, response);
         }
@@ -598,46 +549,58 @@ public class GameFrame extends javax.swing.JFrame {
         updateStatusArea();
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GameFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GameFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GameFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GameFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+    public void updateGameFromServer(String gameData) {
+        String[] parts = gameData.split(";", 4);
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GameFrame().setVisible(true);
-            }
-        });
+        if (parts.length != 4) {
+            appendGameLog("Game data could not be read.");
+            return;
+        }
+
+        try {
+            GamePhase serverPhase = GamePhase.valueOf(parts[0]);
+            String currentTurnPlayer = parts[1];
+            int draftTroops = Integer.parseInt(parts[2]);
+            String mapData = parts[3];
+
+            currentPhase = serverPhase;
+            remainingDraftTroops = draftTroops;
+            clearSelection();
+
+            updateMapFromServer(mapData);
+            updateActionButton(currentTurnPlayer);
+            updateStatusArea();
+        } catch (IllegalArgumentException e) {
+            appendGameLog("Game data could not be read.");
+        }
+
     }
+
+    private void updateActionButton(String currentTurnPlayer) {
+        if (currentPhase == GamePhase.WAITING_FOR_PLAYERS) {
+            actionButton.setText("Waiting");
+            actionButton.setEnabled(false);
+        } else if (!currentPlayer.equals(currentTurnPlayer)) {
+            actionButton.setText("Opponent Turn");
+            actionButton.setEnabled(false);
+        } else {
+            actionButton.setEnabled(true);
+
+            if (currentPhase == GamePhase.DRAFT) {
+                actionButton.setText("Go To Attack Phase");
+            } else if (currentPhase == GamePhase.ATTACK) {
+                actionButton.setText("Go To Fortify Phase");
+            } else if (currentPhase == GamePhase.FORTIFY) {
+                actionButton.setText("End Turn");
+            }
+        }
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actionButton;
     private javax.swing.JTextArea gameLogArea;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

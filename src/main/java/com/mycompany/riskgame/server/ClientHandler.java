@@ -35,23 +35,28 @@ public class ClientHandler extends Thread {
 
             while ((message = in.readLine()) != null) {
 
+                String requestedName = null;
+
                 if (message.startsWith("JOIN ")) {
                     String[] parts = message.split(" ", 2);
 
                     if (parts.length == 2) {
-                        String requestedName = parts[1].trim();
-
-                        if (playerName == null || playerName.isEmpty()) {
-                            playerName = requestedName;
-                        }
+                        requestedName = parts[1].trim();
                     }
                 }
+
                 String response;
 
                 synchronized (gameEngine) {
 
                     response = gameEngine.handleCommand(message, playerName);
                     out.println("RESPONSE:" + response);
+
+                    if (message.startsWith("JOIN ")
+                            && response.startsWith("SUCCESS:")
+                            && playerName == null) {
+                        playerName = requestedName;
+                    }
 
                     if (response.startsWith("ERROR:")) {
                         continue;
@@ -66,11 +71,11 @@ public class ClientHandler extends Thread {
                             || message.equals("NEXT_PHASE")
                             || message.equals("END_TURN")) {
 
-                        String mapState = gameEngine.handleCommand("MAP", playerName);
-                        ServerMain.broadcast("MAP_UPDATE:" + mapState);
+                        String gameUpdate = gameEngine.getGameUpdate();
+                        ServerMain.broadcast("GAME_UPDATE:" + gameUpdate);
+
                     }
                 }
-
             }
 
         } catch (IOException e) {

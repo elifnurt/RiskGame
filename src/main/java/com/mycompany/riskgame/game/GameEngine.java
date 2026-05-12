@@ -27,8 +27,8 @@ public class GameEngine {
         gameMap = new GameMap();
         turnManager = new TurnManager();
         random = new Random();
-        currentPhase = GamePhase.DRAFT;
-        remainingDraftTroops = 3;
+        currentPhase = GamePhase.WAITING_FOR_PLAYERS;
+        remainingDraftTroops = 0;
         fortifyUsed = false;
         gameOver = false;
     }
@@ -52,6 +52,9 @@ public class GameEngine {
 
         if (playerName == null) {
             return "PLEASE_JOIN_FIRST";
+        }
+        if (currentPhase == GamePhase.WAITING_FOR_PLAYERS) {
+            return "WAITING_FOR_PLAYERS";
         }
 
         if (!turnManager.hasPlayers()) {
@@ -93,15 +96,23 @@ public class GameEngine {
     private String handleJoin(String message) {
         String[] parts = message.split(" ", 2);
 
-        if (parts.length < 2 || parts[1].trim().isEmpty()) {
+        if (parts.length < 2) {
             return "ERROR: Invalid name";
+        }
+
+        String playerName = parts[1].trim();
+
+        if (playerName.isEmpty()) {
+            return "ERROR: Invalid name";
+        }
+
+        if (playerName.contains(":") || playerName.contains(";") || playerName.contains("|")) {
+            return "ERROR: Invalid name characters";
         }
 
         if (turnManager.getPlayerCount() >= 2) {
             return "ERROR: Game is full";
         }
-
-        String playerName = parts[1].trim();
 
         for (Player player : turnManager.getPlayers()) {
             if (player.getName().equalsIgnoreCase(playerName)) {
@@ -114,6 +125,7 @@ public class GameEngine {
 
         if (turnManager.getPlayerCount() == 2) {
             gameMap.autoDistributeTerritories(turnManager.getPlayers());
+            currentPhase = GamePhase.DRAFT;
             remainingDraftTroops = calculateDraftTroops(turnManager.getCurrentPlayer().getName());
             return "SUCCESS: Game started and territories distributed! TURN "
                     + turnManager.getCurrentPlayer().getName()
@@ -477,5 +489,18 @@ public class GameEngine {
         }
 
         return true;
+    }
+
+    public String getGameUpdate() {
+        String currentPlayerName = "NONE";
+
+        if (turnManager.getCurrentPlayer() != null) {
+            currentPlayerName = turnManager.getCurrentPlayer().getName();
+        }
+
+        return currentPhase + ";"
+                + currentPlayerName + ";"
+                + remainingDraftTroops + ";"
+                + handleMap();
     }
 }
