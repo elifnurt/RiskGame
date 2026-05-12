@@ -24,6 +24,12 @@ public class GameFrame extends javax.swing.JFrame {
 
     private Map<String, Integer> troopCounts = new HashMap<>();
     private Map<String, javax.swing.JButton> territoryButtons = new HashMap<>();
+    private Map<String, java.awt.Color> playerColors = new HashMap<>();
+
+    private java.awt.Color[] defaultColors = {
+        new java.awt.Color(100, 200, 255), 
+        new java.awt.Color(255, 150, 150) 
+    };
 
     /**
      * Creates new form GameFrame
@@ -55,7 +61,6 @@ public class GameFrame extends javax.swing.JFrame {
         territoryButton10 = new javax.swing.JButton();
         territoryButton11 = new javax.swing.JButton();
         territoryButton12 = new javax.swing.JButton();
-        jButton13 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         statusArea = new javax.swing.JTextArea();
@@ -168,11 +173,7 @@ public class GameFrame extends javax.swing.JFrame {
         });
         jPanel1.add(territoryButton12, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 140, -1, 200));
 
-        jButton13.setText("jButton13");
-        jPanel1.add(jButton13, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 420, 120, 50));
-
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/dice-cube.png"))); // NOI18N
-        jLabel2.setText("jLabel2");
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1280, 410, 120, 110));
 
         statusArea.setColumns(20);
@@ -281,7 +282,7 @@ public class GameFrame extends javax.swing.JFrame {
         territoryButtons.put("Olympus", territoryButton1);
         territoryButtons.put("Sparta", territoryButton2);
         territoryButtons.put("Athens", territoryButton3);
-        territoryButtons.put("Delphi", territoryButton4); // Elphi hatası tarihe karışıyor :)
+        territoryButtons.put("Delphi", territoryButton4); 
         territoryButtons.put("Arcadia", territoryButton5);
         territoryButtons.put("Troy", territoryButton6);
         territoryButtons.put("Elysium", territoryButton7);
@@ -295,26 +296,15 @@ public class GameFrame extends javax.swing.JFrame {
     private void initializeGameScreen() {
         currentPhase = "DRAFT";
         remainingDraftTroops = 3;
-        troopCounts.put("Olympus", 0);
-        troopCounts.put("Sparta", 0);
-        troopCounts.put("Athens", 0);
-        troopCounts.put("Delphi", 0);
-        troopCounts.put("Arcadia", 0);
-        troopCounts.put("Troy", 0);
-        troopCounts.put("Elysium", 0);
-        troopCounts.put("Mycenae", 0);
-        troopCounts.put("Rhodes", 0);
-        troopCounts.put("Corinth", 0);
-        troopCounts.put("Crete", 0);
-        troopCounts.put("Olympia", 0);
+
+        troopCounts.clear();
+        territoryOwners.clear();
 
         actionButton.setText("Go To Attack Phase");
 
         updateStatusArea();
         updateTerritoryTexts();
-        initializeOwners();
         updateTerritoryColors();
-
     }
 
     public void startGameScreen() {
@@ -370,7 +360,12 @@ public class GameFrame extends javax.swing.JFrame {
                     gameLogArea.append("You must select your own territory to fortify from.\n");
                     return;
                 }
+                int troops = troopCounts.getOrDefault(territoryName, 0);
 
+                if (troops <= 1) {
+                    gameLogArea.append("You need at least 2 troops in this territory to fortify from.\n");
+                    return;
+                }
                 fromTerritory = territoryName;
                 gameLogArea.append("Fortify from: " + fromTerritory + "\n");
 
@@ -422,18 +417,12 @@ public class GameFrame extends javax.swing.JFrame {
     }
 
     private void draftOneTroop(String territoryName) {
-        // Artık sayıyı biz artırmıyoruz, sadece sunucudan "istek"te bulunuyoruz
         if (remainingDraftTroops <= 0) {
             gameLogArea.append("All draft troops placed. Click Go To Attack Phase.\n");
             return;
         }
-
-        // Sunucuya komut gönder: "DRAFT BölgeAdı AskerSayısı"
         sendCommand("DRAFT " + territoryName + " 1");
         gameLogArea.append("Draft request sent for: " + territoryName + "\n");
-
-        // Not: remainingDraftTroops-- işlemini ve troopCounts güncellemelerini sildik!
-        // Çünkü bu sayıları artık sunucu bize güncelleyip gönderecek.
     }
 
     private void updateStatusArea() {
@@ -451,32 +440,8 @@ public class GameFrame extends javax.swing.JFrame {
             javax.swing.JButton btn = territoryButtons.get(territoryName);
             String owner = territoryOwners.getOrDefault(territoryName, "NONE");
             Integer troops = troopCounts.getOrDefault(territoryName, 0);
-
-            // Butonun üzerine "Bölge İsmi \n Sahibi: Asker" yazalım
-            // HTML kullanarak buton içinde alt satıra geçebiliriz
             btn.setText("<html><center>" + territoryName + "<br>(" + owner + ")<br>Troops: " + troops + "</center></html>");
         }
-    }
-
-    private void initializeOwners() {
-        territoryOwners.put("Olympus", "Player1");
-        territoryOwners.put("Sparta", "Player2");
-        territoryOwners.put("Athens", "Player1");
-        territoryOwners.put("Troy", "Player2");
-
-        // Diğer territoryleri de aynı mantıkla ekle
-    }
-
-    private java.awt.Color getOwnerColor(String owner) {
-        if ("Player1".equals(owner)) {
-            return new java.awt.Color(150, 40, 40); // kırmızı
-        }
-
-        if ("Player2".equals(owner)) {
-            return new java.awt.Color(40, 80, 160); // mavi
-        }
-
-        return java.awt.Color.LIGHT_GRAY;
     }
 
     private void updateTerritoryColors() {
@@ -486,29 +451,29 @@ public class GameFrame extends javax.swing.JFrame {
             javax.swing.JButton btn = territoryButtons.get(territoryName);
 
             if (btn != null) {
-                // Butonun opaklığını aç (Bazı temalarda renk görünmeyebilir)
                 btn.setOpaque(true);
                 btn.setContentAreaFilled(true);
                 btn.setBorderPainted(true);
 
-                // İsme göre özel renkler
-                if (owner.equalsIgnoreCase("Elif")) {
-                    btn.setBackground(new java.awt.Color(100, 200, 255)); // Açık Mavi
-                } else if (owner.equalsIgnoreCase("Yusuf")) {
-                    btn.setBackground(new java.awt.Color(255, 150, 150)); // Tatlı bir Kırmızı/Pembe
+                if (owner.equals("NONE") || owner.isEmpty()) {
+                    btn.setBackground(java.awt.Color.LIGHT_GRAY);
                 } else {
-                    btn.setBackground(java.awt.Color.LIGHT_GRAY); // Sahipsiz
+                    
+                    if (!playerColors.containsKey(owner)) {
+                        int colorIndex = playerColors.size() % defaultColors.length;
+                        playerColors.put(owner, defaultColors[colorIndex]);
+                    }
+                    
+                    btn.setBackground(playerColors.get(owner));
                 }
             }
         }
     }
 
-    // Sunucuya mesaj göndermek için kullandığımız ana kapı
     public void setPrintWriter(java.io.PrintWriter out) {
         this.out = out;
     }
 
-    // Butonlara tıklandığında sunucuya komut atan yardımcı metod
     private void sendCommand(String command) {
         if (out != null) {
             out.println(command);
@@ -517,10 +482,8 @@ public class GameFrame extends javax.swing.JFrame {
             gameLogArea.append("Hata: Sunucu bağlantısı yok!\n");
         }
     }
-
-    // Sunucudan gelen harita bilgisini çözüp butonlara yansıtan metod
+    
     public void updateMapFromServer(String mapData) {
-        // mapData formatı: "Olympus:Player1:5|Sparta:Player2:3"
         String[] territories = mapData.split("\\|");
 
         for (String tInfo : territories) {
@@ -530,26 +493,22 @@ public class GameFrame extends javax.swing.JFrame {
                 String name = parts[0];
                 String owner = parts[1];
 
-                // Eğer sunucudan asker sayısı gelirse onu sayıya çevir
                 try {
                     int troops = Integer.parseInt(parts[2]);
                     territoryOwners.put(name, owner);
                     troopCounts.put(name, troops);
                 } catch (NumberFormatException e) {
-                    // Sayı dönüştürülemezse hata verme, pas geç
+                    
                 }
             }
         }
 
-        // Veriler güncellendi, şimdi ekranı boya!
         updateTerritoryTexts();
         updateTerritoryColors();
     }
 
-    // ClientMain'in Log ekranına dışarıdan yazı yazabilmesi için kolaylık metodu
     public void appendGameLog(String message) {
         gameLogArea.append(message + "\n");
-        // Log ekranını hep en alta kaydır
         gameLogArea.setCaretPosition(gameLogArea.getDocument().getLength());
     }
 
@@ -645,7 +604,6 @@ public class GameFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actionButton;
     private javax.swing.JTextArea gameLogArea;
-    private javax.swing.JButton jButton13;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;

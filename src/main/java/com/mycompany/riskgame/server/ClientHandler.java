@@ -10,7 +10,7 @@ import java.net.Socket;
 public class ClientHandler extends Thread {
 
     private Socket clientSocket;
-    private GameEngine gameEngine;
+    private final GameEngine gameEngine;
     private String playerName;
     private PrintWriter out;
 
@@ -35,8 +35,6 @@ public class ClientHandler extends Thread {
 
             while ((message = in.readLine()) != null) {
 
-                System.out.println("Client says: " + message);
-
                 if (message.startsWith("JOIN ")) {
                     String[] parts = message.split(" ", 2);
 
@@ -44,22 +42,25 @@ public class ClientHandler extends Thread {
                         playerName = parts[1].trim();
                     }
                 }
+                String response;
 
-                String response = gameEngine.handleCommand(message, playerName);
+                synchronized (gameEngine) {
 
-                out.println("RESPONSE:" + response);
+                    response = gameEngine.handleCommand(message, playerName);
+                    out.println("RESPONSE:" + response);
 
-                if (message.equals("MAP")
-                        || message.startsWith("JOIN ")
-                        || message.startsWith("DRAFT ")
-                        || message.startsWith("ATTACK ")
-                        || message.startsWith("BLITZ ")
-                        || message.startsWith("FORTIFY ")
-                        || message.equals("NEXT_PHASE")
-                        || message.equals("END_TURN")) {
+                    if (message.equals("MAP")
+                            || message.startsWith("JOIN ")
+                            || message.startsWith("DRAFT ")
+                            || message.startsWith("ATTACK ")
+                            || message.startsWith("BLITZ ")
+                            || message.startsWith("FORTIFY ")
+                            || message.equals("NEXT_PHASE")
+                            || message.equals("END_TURN")) {
 
-                    String mapState = gameEngine.handleCommand("MAP", playerName);
-                    ServerMain.broadcast("MAP_UPDATE:" + mapState);
+                        String mapState = gameEngine.handleCommand("MAP", playerName);
+                        ServerMain.broadcast("MAP_UPDATE:" + mapState);
+                    }
                 }
 
             }

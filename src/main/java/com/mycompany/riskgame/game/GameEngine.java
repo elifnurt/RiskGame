@@ -19,6 +19,9 @@ public class GameEngine {
     private int remainingDraftTroops;
     private boolean fortifyUsed;
     private boolean gameOver;
+    private static final String[] NORTHERN_GREECE = {"Olympus", "Delphi", "Sparta", "Athens"};
+    private static final String[] TROY_REGION = {"Arcadia", "Troy", "Elysium", "Mycenae"};
+    private static final String[] ISLANDS_REGION = {"Rhodes", "Corinth", "Crete", "Olympia"};
 
     public GameEngine() {
         gameMap = new GameMap();
@@ -97,7 +100,6 @@ public class GameEngine {
         Player player = new Player(playerName);
         turnManager.addPlayer(player);
 
-        // Eğer 2 oyuncu olduysa, bölgeleri otomatik dağıt!
         if (turnManager.getPlayerCount() == 2) {
             gameMap.autoDistributeTerritories(turnManager.getPlayers());
             return "SUCCESS: Game started and territories distributed!";
@@ -112,16 +114,10 @@ public class GameEngine {
             return "NOT_FORTIFY_PHASE";
         }
 
-        if (!turnManager.hasPlayers()) {
-            return "NO_PLAYERS";
-        }
-
         Player nextPlayer = turnManager.nextTurn();
         currentPhase = GamePhase.DRAFT;
         remainingDraftTroops = calculateDraftTroops(nextPlayer.getName());
         fortifyUsed = false;
-
-        System.out.println("Turn: " + nextPlayer.getName());
 
         return "TURN " + nextPlayer.getName();
     }
@@ -175,10 +171,6 @@ public class GameEngine {
             return "NOT_ENOUGH_DRAFT_TROOPS";
         }
 
-        if (!turnManager.hasPlayers()) {
-            return "NO_PLAYERS";
-        }
-
         Territory territory = gameMap.findTerritoryByName(territoryName);
 
         if (territory == null) {
@@ -194,9 +186,6 @@ public class GameEngine {
         territory.addTroops(troopAmount);
         remainingDraftTroops -= troopAmount;
 
-        System.out.println(troopAmount + " troops added to " + territory.getName());
-        System.out.println(territory.getName() + " total troops: " + territory.getTroops());
-
         return "DRAFT_SUCCESS Remaining draft troops: " + remainingDraftTroops;
     }
 
@@ -210,10 +199,6 @@ public class GameEngine {
 
         if (parts.length < 3) {
             return "INVALID_COMMAND";
-        }
-
-        if (!turnManager.hasPlayers()) {
-            return "NO_PLAYERS";
         }
 
         String attackerTerritoryName = parts[1];
@@ -260,10 +245,6 @@ public class GameEngine {
         Arrays.sort(attackerDice);
         Arrays.sort(defenderDice);
 
-        System.out.println(attackerTerritory.getName() + " attacks " + defenderTerritory.getName());
-        System.out.println("Attacker dice: " + Arrays.toString(attackerDice));
-        System.out.println("Defender dice: " + Arrays.toString(defenderDice));
-
         int comparisons = Math.min(attackerDiceCount, defenderDiceCount);
         int attackerLosses = 0;
         int defenderLosses = 0;
@@ -282,11 +263,6 @@ public class GameEngine {
         attackerTerritory.removeTroops(attackerLosses);
         defenderTerritory.removeTroops(defenderLosses);
 
-        System.out.println("Attacker losses: " + attackerLosses);
-        System.out.println("Defender losses: " + defenderLosses);
-        System.out.println(attackerTerritory.getName() + " troops left: " + attackerTerritory.getTroops());
-        System.out.println(defenderTerritory.getName() + " troops left: " + defenderTerritory.getTroops());
-
         if (defenderTerritory.getTroops() <= 0) {
             String oldOwner = defenderTerritory.getOwner();
             String newOwner = attackerTerritory.getOwner();
@@ -295,10 +271,6 @@ public class GameEngine {
 
             attackerTerritory.removeTroops(1);
             defenderTerritory.addTroops(1);
-
-            System.out.println(defenderTerritory.getName() + " captured!");
-            System.out.println("Old owner: " + oldOwner);
-            System.out.println("New owner: " + newOwner);
 
             if (checkWinner(newOwner)) {
                 gameOver = true;
@@ -370,10 +342,6 @@ public class GameEngine {
             return "INVALID_COMMAND";
         }
 
-        if (!turnManager.hasPlayers()) {
-            return "NO_PLAYERS";
-        }
-
         String fromName = parts[1];
         String toName = parts[2];
 
@@ -418,22 +386,11 @@ public class GameEngine {
         toTerritory.addTroops(troopAmount);
         fortifyUsed = true;
 
-        System.out.println(fromTerritory.getName() + " troops: " + fromTerritory.getTroops());
-        System.out.println(toTerritory.getName() + " troops: " + toTerritory.getTroops());
-
-        System.out.println(
-                troopAmount + " troops moved from "
-                + fromTerritory.getName()
-                + " to "
-                + toTerritory.getName()
-        );
-
         return "FORTIFY_SUCCESS";
     }
 
     private String handleMap() {
         StringBuilder sb = new StringBuilder();
-        // Haritadaki tüm bölgeleri dön
         for (Territory t : gameMap.getTerritories()) {
             sb.append(t.getName()).append(":");
 
@@ -471,37 +428,29 @@ public class GameEngine {
     private int calculateContinentBonus(String playerName) {
         int totalBonus = 0;
 
-        // 1. Kıta: Kuzey Yunanistan (Sol Üst Ada)
-        String[] northernGreece = {"Olympus", "Delphi", "Sparta", "Athens"};
-        if (ownsContinent(playerName, northernGreece)) {
-            totalBonus += 3; // Bu kıtanın tamamına sahipse +3 asker
+        if (ownsContinent(playerName, NORTHERN_GREECE)) {
+            totalBonus += 3; 
         }
 
-        // 2. Kıta: Truva ve Çevresi (Sol Alt Ada)
-        String[] troyRegion = {"Arcadia", "Troy", "Elysium", "Mycenae"};
-        if (ownsContinent(playerName, troyRegion)) {
+        if (ownsContinent(playerName, TROY_REGION)) {
             totalBonus += 3;
         }
 
-        // 3. Kıta: Adalar ve Güney (Sağ Ada)
-        String[] islandsRegion = {"Rhodes", "Corinth", "Crete", "Olympia"};
-        if (ownsContinent(playerName, islandsRegion)) {
+        if (ownsContinent(playerName, ISLANDS_REGION)) {
             totalBonus += 3;
         }
 
         return totalBonus;
     }
 
-    // Kıta kontrolünü kolaylaştırmak için yardımcı metod (Bunu da GameEngine içine ekle)
     private boolean ownsContinent(String playerName, String[] continentTerritories) {
         for (String territoryName : continentTerritories) {
             Territory territory = gameMap.findTerritoryByName(territoryName);
-            // Eğer bölge bulunamazsa veya sahibi bu oyuncu değilse kıtaya sahip değildir
             if (territory == null || territory.getOwner() == null || !territory.getOwner().equals(playerName)) {
                 return false;
             }
         }
-        return true; // Tüm bölgeler oyuncununsa true döner
+        return true; 
     }
 
     private boolean checkWinner(String playerName) {
