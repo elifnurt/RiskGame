@@ -91,21 +91,37 @@ public class GameEngine {
     }
 
     private String handleJoin(String message) {
-        String[] parts = message.split(" ");
-        if (parts.length < 2) {
+        String[] parts = message.split(" ", 2);
+
+        if (parts.length < 2 || parts[1].trim().isEmpty()) {
             return "ERROR: Invalid name";
         }
 
-        String playerName = parts[1];
+        if (turnManager.getPlayerCount() >= 2) {
+            return "ERROR: Game is full";
+        }
+
+        String playerName = parts[1].trim();
+
+        for (Player player : turnManager.getPlayers()) {
+            if (player.getName().equalsIgnoreCase(playerName)) {
+                return "ERROR: Name already taken";
+            }
+        }
+
         Player player = new Player(playerName);
         turnManager.addPlayer(player);
 
         if (turnManager.getPlayerCount() == 2) {
             gameMap.autoDistributeTerritories(turnManager.getPlayers());
-            return "SUCCESS: Game started and territories distributed!";
+            remainingDraftTroops = calculateDraftTroops(turnManager.getCurrentPlayer().getName());
+            return "SUCCESS: Game started and territories distributed! TURN "
+                    + turnManager.getCurrentPlayer().getName()
+                    + " Draft troops: "
+                    + remainingDraftTroops;
         }
 
-        return "SUCCESS: Joined as " + playerName;
+        return "SUCCESS: Joined as " + playerName + ". Waiting for second player...";
     }
 
     private String handleEndTurn() {
@@ -119,7 +135,7 @@ public class GameEngine {
         remainingDraftTroops = calculateDraftTroops(nextPlayer.getName());
         fortifyUsed = false;
 
-        return "TURN " + nextPlayer.getName();
+        return "TURN " + nextPlayer.getName() + " Draft troops: " + remainingDraftTroops;
     }
 
     private String handleNextPhase() {
@@ -264,7 +280,6 @@ public class GameEngine {
         defenderTerritory.removeTroops(defenderLosses);
 
         if (defenderTerritory.getTroops() <= 0) {
-            String oldOwner = defenderTerritory.getOwner();
             String newOwner = attackerTerritory.getOwner();
 
             defenderTerritory.setOwner(newOwner);
@@ -394,7 +409,6 @@ public class GameEngine {
         for (Territory t : gameMap.getTerritories()) {
             sb.append(t.getName()).append(":");
 
-            // Eğer sahibi yoksa "NONE" yaz, varsa sahibinin adını yaz
             if (t.getOwner() == null) {
                 sb.append("NONE");
             } else {
@@ -403,7 +417,7 @@ public class GameEngine {
 
             sb.append(":").append(t.getTroops()).append("|");
         }
-        // Örnek Çıktı: "Olympus:NONE:0|Sparta:Player1:3|"
+
         return sb.toString();
     }
 
@@ -429,7 +443,7 @@ public class GameEngine {
         int totalBonus = 0;
 
         if (ownsContinent(playerName, NORTHERN_GREECE)) {
-            totalBonus += 3; 
+            totalBonus += 3;
         }
 
         if (ownsContinent(playerName, TROY_REGION)) {
@@ -450,7 +464,7 @@ public class GameEngine {
                 return false;
             }
         }
-        return true; 
+        return true;
     }
 
     private boolean checkWinner(String playerName) {

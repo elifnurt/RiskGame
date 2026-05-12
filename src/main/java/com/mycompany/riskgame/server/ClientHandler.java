@@ -39,7 +39,11 @@ public class ClientHandler extends Thread {
                     String[] parts = message.split(" ", 2);
 
                     if (parts.length == 2) {
-                        playerName = parts[1].trim();
+                        String requestedName = parts[1].trim();
+
+                        if (playerName == null || playerName.isEmpty()) {
+                            playerName = requestedName;
+                        }
                     }
                 }
                 String response;
@@ -48,6 +52,10 @@ public class ClientHandler extends Thread {
 
                     response = gameEngine.handleCommand(message, playerName);
                     out.println("RESPONSE:" + response);
+
+                    if (response.startsWith("ERROR:")) {
+                        continue;
+                    }
 
                     if (message.equals("MAP")
                             || message.startsWith("JOIN ")

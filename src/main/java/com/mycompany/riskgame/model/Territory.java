@@ -1,16 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.riskgame.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author elifnur
- */
 public class Territory {
 
     private String name;
@@ -19,11 +11,11 @@ public class Territory {
     private List<Territory> neighbors;
 
     public Territory(String name) {
-    this.name = name;
-    this.owner = null;
-    this.troops = 0;
-    this.neighbors = new ArrayList<>();
-}
+        this.name = name;
+        this.owner = null;
+        this.troops = 0;
+        this.neighbors = new ArrayList<>();
+    }
 
     public String getName() {
         return name;
@@ -50,41 +42,41 @@ public class Territory {
     }
 
     public void addNeighbor(Territory territory) {
-        neighbors.add(territory);
+        if (territory != null && !neighbors.contains(territory)) {
+            neighbors.add(territory);
+        }
+    }
+
+    public boolean isNeighbor(Territory territory) {
+        return neighbors.contains(territory);
     }
 
     public List<Territory> getNeighbors() {
         return neighbors;
     }
-    
-    public boolean isNeighbor(Territory territory) {
 
-    return neighbors.contains(territory);
-}
-    
     public boolean hasPathTo(Territory target, String owner) {
-    return hasPathToHelper(target, owner, new ArrayList<>());
-}
-
-private boolean hasPathToHelper(Territory target, String owner, List<Territory> visited) {
-
-    if (this == target) {
-        return true;
+        return hasPathToHelper(target, owner, new ArrayList<>());
     }
 
-    visited.add(this);
+    private boolean hasPathToHelper(Territory target, String owner, List<Territory> visited) {
+        if (this == target) {
+            return true;
+        }
 
-    for (Territory neighbor : neighbors) {
+        visited.add(this);
 
-        if (!visited.contains(neighbor)
-                && neighbor.getOwner().equals(owner)) {
+        for (Territory neighbor : neighbors) {
+            if (!visited.contains(neighbor)
+                    && owner != null
+                    && owner.equals(neighbor.getOwner())) {
 
-            if (neighbor.hasPathToHelper(target, owner, visited)) {
-                return true;
+                if (neighbor.hasPathToHelper(target, owner, visited)) {
+                    return true;
+                }
             }
         }
-    }
 
-    return false;
-}
+        return false;
+    }
 }

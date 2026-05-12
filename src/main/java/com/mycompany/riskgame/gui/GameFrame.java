@@ -4,6 +4,8 @@
  */
 package com.mycompany.riskgame.gui;
 
+import com.mycompany.riskgame.game.GamePhase;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +16,7 @@ import java.util.Map;
 public class GameFrame extends javax.swing.JFrame {
 
     private java.io.PrintWriter out;
-    private String currentPhase = "DRAFT";
+    private GamePhase currentPhase = GamePhase.DRAFT;
     private int remainingDraftTroops = 3;
     private String fromTerritory = null;
     private String toTerritory = null;
@@ -27,8 +29,8 @@ public class GameFrame extends javax.swing.JFrame {
     private Map<String, java.awt.Color> playerColors = new HashMap<>();
 
     private java.awt.Color[] defaultColors = {
-        new java.awt.Color(100, 200, 255), 
-        new java.awt.Color(255, 150, 150) 
+        new java.awt.Color(100, 200, 255),
+        new java.awt.Color(255, 150, 150)
     };
 
     /**
@@ -267,22 +269,22 @@ public class GameFrame extends javax.swing.JFrame {
 
     private void actionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionButtonActionPerformed
 
-        if (currentPhase.equals("DRAFT")) {
+        if (currentPhase == GamePhase.DRAFT) {
             sendCommand("NEXT_PHASE");
-            gameLogArea.append("Attack phase geçiş isteği gönderildi...\n");
-        } else if (currentPhase.equals("ATTACK")) {
+            appendGameLog("Attack phase geçiş isteği gönderildi...");
+        } else if (currentPhase == GamePhase.ATTACK) {
             sendCommand("NEXT_PHASE");
-            gameLogArea.append("Fortify phase geçiş isteği gönderildi...\n");
-        } else if (currentPhase.equals("FORTIFY")) {
+            appendGameLog("Fortify phase geçiş isteği gönderildi...");
+        } else if (currentPhase == GamePhase.FORTIFY) {
             sendCommand("END_TURN");
-            gameLogArea.append("Turn bitirme isteği gönderildi...\n");
+            appendGameLog("Turn bitirme isteği gönderildi...");
         }
     }//GEN-LAST:event_actionButtonActionPerformed
     private void setupButtonMap() {
         territoryButtons.put("Olympus", territoryButton1);
         territoryButtons.put("Sparta", territoryButton2);
         territoryButtons.put("Athens", territoryButton3);
-        territoryButtons.put("Delphi", territoryButton4); 
+        territoryButtons.put("Delphi", territoryButton4);
         territoryButtons.put("Arcadia", territoryButton5);
         territoryButtons.put("Troy", territoryButton6);
         territoryButtons.put("Elysium", territoryButton7);
@@ -294,7 +296,7 @@ public class GameFrame extends javax.swing.JFrame {
     }
 
     private void initializeGameScreen() {
-        currentPhase = "DRAFT";
+        currentPhase = GamePhase.DRAFT;
         remainingDraftTroops = 3;
 
         troopCounts.clear();
@@ -315,70 +317,74 @@ public class GameFrame extends javax.swing.JFrame {
         this.currentPlayer = playerName;
     }
 
+    private void clearSelection() {
+        fromTerritory = null;
+        toTerritory = null;
+    }
+
     private void handleTerritoryClick(String territoryName) {
 
         selectedTerritory = territoryName;
 
-        if (currentPhase.equals("DRAFT")) {
+        if (currentPhase == GamePhase.DRAFT) {
             draftOneTroop(territoryName);
-        } else if (currentPhase.equals("ATTACK")) {
+        } else if (currentPhase == GamePhase.ATTACK) {
 
             if (fromTerritory == null) {
 
                 String owner = territoryOwners.get(territoryName);
 
                 if (!currentPlayer.equals(owner)) {
-                    gameLogArea.append("You must select your own territory to attack from.\n");
+                    appendGameLog("You must select your own territory to attack from.");
                     return;
                 }
 
                 fromTerritory = territoryName;
-                gameLogArea.append("Attacker selected: " + fromTerritory + "\n");
+                appendGameLog("Attacker selected: " + fromTerritory);
             } else {
 
                 String attackerOwner = territoryOwners.get(fromTerritory);
                 String defenderOwner = territoryOwners.get(territoryName);
 
                 if (attackerOwner.equals(defenderOwner)) {
-                    gameLogArea.append("You cannot attack your own territory.\n");
+                    appendGameLog("You cannot attack your own territory.");
                     return;
                 }
 
                 toTerritory = territoryName;
-                gameLogArea.append("Defender selected: " + toTerritory + "\n");
+                appendGameLog("Defender selected: " + toTerritory);
                 sendCommand("ATTACK " + fromTerritory + " " + toTerritory);
-                gameLogArea.append("Attack request sent: " + fromTerritory + " -> " + toTerritory + "\n");
+                appendGameLog("Attack request sent: " + fromTerritory + " -> " + toTerritory);
 
-                fromTerritory = null;
-                toTerritory = null;
+                clearSelection();
             }
-        } else if (currentPhase.equals("FORTIFY")) {
+        } else if (currentPhase == GamePhase.FORTIFY) {
             if (fromTerritory == null) {
                 String owner = territoryOwners.get(territoryName);
 
                 if (!currentPlayer.equals(owner)) {
-                    gameLogArea.append("You must select your own territory to fortify from.\n");
+                    appendGameLog("You must select your own territory to fortify from.");
                     return;
                 }
                 int troops = troopCounts.getOrDefault(territoryName, 0);
 
                 if (troops <= 1) {
-                    gameLogArea.append("You need at least 2 troops in this territory to fortify from.\n");
+                    appendGameLog("You need at least 2 troops in this territory to fortify from.");
                     return;
                 }
                 fromTerritory = territoryName;
-                gameLogArea.append("Fortify from: " + fromTerritory + "\n");
+                appendGameLog("Fortify from: " + fromTerritory);
 
             } else {
                 String owner = territoryOwners.get(territoryName);
 
                 if (!currentPlayer.equals(owner)) {
-                    gameLogArea.append("You must select your own territory to fortify to.\n");
+                    appendGameLog("You must select your own territory to fortify to.");
                     return;
                 }
 
                 toTerritory = territoryName;
-                gameLogArea.append("Fortify to: " + toTerritory + "\n");
+                appendGameLog("Fortify to: " + toTerritory);
 
                 String amountText = javax.swing.JOptionPane.showInputDialog(
                         this,
@@ -388,9 +394,8 @@ public class GameFrame extends javax.swing.JFrame {
                 );
 
                 if (amountText == null || amountText.trim().isEmpty()) {
-                    gameLogArea.append("Fortify cancelled.\n");
-                    fromTerritory = null;
-                    toTerritory = null;
+                    appendGameLog("Fortify cancelled.");
+                    clearSelection();
                     updateStatusArea();
                     return;
                 }
@@ -399,16 +404,15 @@ public class GameFrame extends javax.swing.JFrame {
                     int amount = Integer.parseInt(amountText.trim());
 
                     sendCommand("FORTIFY " + fromTerritory + " " + toTerritory + " " + amount);
-                    gameLogArea.append("Fortify request sent: "
+                    appendGameLog("Fortify request sent: "
                             + fromTerritory + " -> " + toTerritory
-                            + " troops: " + amount + "\n");
+                            + " troops: " + amount);
 
                 } catch (NumberFormatException e) {
-                    gameLogArea.append("Invalid troop amount.\n");
+                    appendGameLog("Invalid troop amount.");
                 }
 
-                fromTerritory = null;
-                toTerritory = null;
+                clearSelection();
             }
 
         }
@@ -418,11 +422,19 @@ public class GameFrame extends javax.swing.JFrame {
 
     private void draftOneTroop(String territoryName) {
         if (remainingDraftTroops <= 0) {
-            gameLogArea.append("All draft troops placed. Click Go To Attack Phase.\n");
+            appendGameLog("All draft troops placed. Click Go To Attack Phase.");
             return;
         }
+
+        String owner = territoryOwners.get(territoryName);
+
+        if (!currentPlayer.equals(owner)) {
+            appendGameLog("You can only draft troops to your own territories.");
+            return;
+        }
+
         sendCommand("DRAFT " + territoryName + " 1");
-        gameLogArea.append("Draft request sent for: " + territoryName + "\n");
+        appendGameLog("Draft request sent for: " + territoryName);
     }
 
     private void updateStatusArea() {
@@ -458,12 +470,12 @@ public class GameFrame extends javax.swing.JFrame {
                 if (owner.equals("NONE") || owner.isEmpty()) {
                     btn.setBackground(java.awt.Color.LIGHT_GRAY);
                 } else {
-                    
+
                     if (!playerColors.containsKey(owner)) {
                         int colorIndex = playerColors.size() % defaultColors.length;
                         playerColors.put(owner, defaultColors[colorIndex]);
                     }
-                    
+
                     btn.setBackground(playerColors.get(owner));
                 }
             }
@@ -479,10 +491,10 @@ public class GameFrame extends javax.swing.JFrame {
             out.println(command);
             out.flush();
         } else {
-            gameLogArea.append("Hata: Sunucu bağlantısı yok!\n");
+            appendGameLog("Hata: Sunucu bağlantısı yok!");
         }
     }
-    
+
     public void updateMapFromServer(String mapData) {
         String[] territories = mapData.split("\\|");
 
@@ -498,7 +510,8 @@ public class GameFrame extends javax.swing.JFrame {
                     territoryOwners.put(name, owner);
                     troopCounts.put(name, troops);
                 } catch (NumberFormatException e) {
-                    
+                    appendGameLog("Map data could not be read for: " + tInfo);
+
                 }
             }
         }
@@ -510,6 +523,20 @@ public class GameFrame extends javax.swing.JFrame {
     public void appendGameLog(String message) {
         gameLogArea.append(message + "\n");
         gameLogArea.setCaretPosition(gameLogArea.getDocument().getLength());
+    }
+
+    private int extractLastNumber(String text) {
+        String[] parts = text.split(" ");
+
+        for (int i = parts.length - 1; i >= 0; i--) {
+            try {
+                return Integer.parseInt(parts[i]);
+            } catch (NumberFormatException e) {
+
+            }
+        }
+
+        return 0;
     }
 
     public void handleServerResponse(String response) {
@@ -527,38 +554,43 @@ public class GameFrame extends javax.swing.JFrame {
             }
 
             sendCommand("MAP");
+
         } else if (response.startsWith("DRAFT_NOT_FINISHED")) {
             appendGameLog("Önce bütün draft askerlerini yerleştirmelisin.");
+
         } else if (response.equals("PHASE_ATTACK")) {
-            currentPhase = "ATTACK";
-            fromTerritory = null;
-            toTerritory = null;
+            currentPhase = GamePhase.ATTACK;
+            clearSelection();
             actionButton.setText("Go To Fortify Phase");
             appendGameLog("Attack phase başladı.");
+
         } else if (response.equals("PHASE_FORTIFY")) {
-            currentPhase = "FORTIFY";
-            fromTerritory = null;
-            toTerritory = null;
+            currentPhase = GamePhase.FORTIFY;
+            clearSelection();
             actionButton.setText("End Turn");
             appendGameLog("Fortify phase başladı.");
-        } else if (response.startsWith("TURN ")) {
-            currentPhase = "DRAFT";
-            remainingDraftTroops = 3;
-            fromTerritory = null;
-            toTerritory = null;
+
+        } else if (response.startsWith("TURN ") || response.contains(" TURN ")) {
+            currentPhase = GamePhase.DRAFT;
+            remainingDraftTroops = extractLastNumber(response);
+            clearSelection();
             actionButton.setText("Go To Attack Phase");
-            appendGameLog("Sıra: " + response.substring(5));
+
+            String turnText = response.substring(response.indexOf("TURN ") + 5);
+            appendGameLog("Sıra: " + turnText);
+
             sendCommand("MAP");
+
         } else if (response.startsWith("ATTACK_RESULT")
                 || response.equals("TERRITORY_CAPTURED")
                 || response.equals("BLITZ_SUCCESS")) {
-            fromTerritory = null;
-            toTerritory = null;
+            clearSelection();
             sendCommand("MAP");
+
         } else if (response.equals("FORTIFY_SUCCESS")) {
-            fromTerritory = null;
-            toTerritory = null;
+            clearSelection();
             sendCommand("MAP");
+
         } else if (response.startsWith("GAME_OVER")) {
             javax.swing.JOptionPane.showMessageDialog(this, response);
         }
