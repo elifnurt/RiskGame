@@ -91,6 +91,13 @@ public class ClientMain {
                                     sf.setConnectionStatus(response);
                                     sf.resetConnectionButton();
                                 }
+
+                                try {
+                                    socket.close();
+                                } catch (IOException e) {
+                                    // Socket may already be closed after the error response.
+                                }
+
                                 return;
                             }
 

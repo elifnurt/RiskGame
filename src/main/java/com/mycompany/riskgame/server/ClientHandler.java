@@ -53,6 +53,7 @@ public class ClientHandler extends Thread {
                     response = gameEngine.handleCommand(message, playerName);
 
                     if (response.equals("GAME_RESET")) {
+                        disconnectMessageSent = true;
                         ServerMain.broadcast("RESPONSE:GAME_RESET");
                         continue;
                     }
