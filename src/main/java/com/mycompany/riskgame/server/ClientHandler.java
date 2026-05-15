@@ -98,16 +98,10 @@ public class ClientHandler extends Thread {
                     }
                 }
             }
-            if (playerName != null && !disconnectMessageSent) {
-                ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
-                disconnectMessageSent = true;
-            }
+            handleDisconnectedPlayer();
 
         } catch (IOException e) {
-            if (playerName != null && !disconnectMessageSent) {
-                ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
-                disconnectMessageSent = true;
-            }
+            handleDisconnectedPlayer();
         } finally {
             if (out != null) {
                 ServerMain.removeClient(out);
@@ -118,6 +112,17 @@ public class ClientHandler extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void handleDisconnectedPlayer() {
+        if (playerName != null && !disconnectMessageSent) {
+            synchronized (gameEngine) {
+                gameEngine.resetGame();
+            }
+
+            ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
+            disconnectMessageSent = true;
         }
     }
 }

@@ -468,14 +468,17 @@ public class GameEngine {
     }
 
     private String handleResetGame() {
+        resetGame();
+        return "GAME_RESET";
+    }
+
+    public void resetGame() {
         gameMap = new GameMap();
         turnManager = new TurnManager();
         currentPhase = GamePhase.WAITING_FOR_PLAYERS;
         remainingDraftTroops = 0;
         fortifyUsed = false;
         gameOver = false;
-
-        return "GAME_RESET";
     }
 
     public String getGameUpdate() {
