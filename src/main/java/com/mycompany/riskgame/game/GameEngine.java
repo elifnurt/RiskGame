@@ -42,7 +42,7 @@ public class GameEngine {
         if (message.startsWith("JOIN ")) {
             return handleJoin(message);
         }
-        
+
         if (message.equals("RESET_GAME")) {
             return handleResetGame();
         }
@@ -219,7 +219,9 @@ public class GameEngine {
         territory.addTroops(troopAmount);
         remainingDraftTroops -= troopAmount;
 
-        return "DRAFT_SUCCESS Remaining draft troops: " + remainingDraftTroops;
+        return "DRAFT_SUCCESS " + currentPlayer + ": drafted "
+                + troopAmount + " troop(s) to " + territoryName
+                + ". Remaining draft troops: " + remainingDraftTroops;
     }
 
     private String handleAttack(String message) {
@@ -309,10 +311,20 @@ public class GameEngine {
                 return "GAME_OVER Winner: " + newOwner;
             }
 
-            return "TERRITORY_CAPTURED";
+            return "TERRITORY_CAPTURED "
+                    + currentPlayer + ": "
+                    + attackerTerritoryName + " captured " + defenderTerritoryName + ". "
+                    + "Attacker dice: " + Arrays.toString(attackerDice)
+                    + " Defender dice: " + Arrays.toString(defenderDice);
         }
 
-        return "ATTACK_RESULT Attacker lost: " + attackerLosses + " Defender lost: " + defenderLosses;
+        return "ATTACK_RESULT "
+                + currentPlayer + ": "
+                + attackerTerritoryName + " attacked " + defenderTerritoryName + ". "
+                + "Attacker dice: " + Arrays.toString(attackerDice)
+                + " Defender dice: " + Arrays.toString(defenderDice)
+                + " | Attacker lost: " + attackerLosses
+                + " Defender lost: " + defenderLosses;
 
     }
 
@@ -376,7 +388,8 @@ public class GameEngine {
         toTerritory.addTroops(troopAmount);
         fortifyUsed = true;
 
-        return "FORTIFY_SUCCESS";
+        return "FORTIFY_SUCCESS " + currentPlayer + ": "
+                + fromName + " moved " + troopAmount + " troop(s) to " + toName + ".";
     }
 
     private String buildMapData() {

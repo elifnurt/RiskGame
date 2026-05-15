@@ -62,7 +62,17 @@ public class ClientHandler extends Thread {
                         continue;
                     }
 
-                    out.println("RESPONSE:" + response);
+                    if (response.startsWith("ATTACK_RESULT")
+                            || response.startsWith("TERRITORY_CAPTURED")
+                            || response.startsWith("DRAFT_SUCCESS")
+                            || response.startsWith("PHASE_ATTACK")
+                            || response.startsWith("PHASE_FORTIFY")
+                            || response.startsWith("TURN ")
+                            || response.startsWith("FORTIFY_SUCCESS")) {
+                        ServerMain.broadcast("RESPONSE:" + response);
+                    } else {
+                        out.println("RESPONSE:" + response);
+                    }
 
                     if (message.startsWith("JOIN ")
                             && response.startsWith("SUCCESS:")

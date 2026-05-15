@@ -65,6 +65,7 @@ public class EndFrame extends javax.swing.JFrame {
         jLabel2.setBackground(new java.awt.Color(253, 245, 204));
         jLabel2.setFont(new java.awt.Font("Apple LiSung", 1, 36)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(152, 58, 52));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setOpaque(true);
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 360, 230, 40));
 

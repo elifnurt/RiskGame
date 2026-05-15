@@ -36,7 +36,9 @@ public class GameMap {
         connect(athens, delphi);
 
         connect(arcadia, troy);
+        connect(arcadia, elysium);
         connect(troy, elysium);
+        connect(troy, mycenae);
         connect(elysium, mycenae);
 
         connect(rhodes, corinth);

@@ -21,7 +21,8 @@ public class GameFrame extends javax.swing.JFrame {
     private String fromTerritory = null;
     private String toTerritory = null;
     private String selectedTerritory;
-    private String currentPlayer = "Player1";
+    private String currentPlayer = "NONE";
+    private String currentTurnPlayer = "NONE";
     private Map<String, String> territoryOwners = new HashMap<>();
 
     private Map<String, Integer> troopCounts = new HashMap<>();
@@ -39,6 +40,7 @@ public class GameFrame extends javax.swing.JFrame {
     public GameFrame() {
         initComponents();
         setupButtonMap();
+        diceLabel.setVisible(false);
     }
 
     /**
@@ -68,6 +70,7 @@ public class GameFrame extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         gameLogArea = new javax.swing.JTextArea();
         actionButton = new javax.swing.JButton();
+        diceLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -91,7 +94,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton2ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 110, -1, 140));
+        jPanel1.add(territoryButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 110, -1, 140));
 
         territoryButton3.setText("Athens");
         territoryButton3.addActionListener(new java.awt.event.ActionListener() {
@@ -99,7 +102,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton3ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 110, -1, 140));
+        jPanel1.add(territoryButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 110, -1, 140));
 
         territoryButton4.setText("Delphi");
         territoryButton4.addActionListener(new java.awt.event.ActionListener() {
@@ -107,7 +110,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton4ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 250, 240, 60));
+        jPanel1.add(territoryButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 260, 250, 60));
 
         territoryButton5.setText("Arcadia");
         territoryButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -115,7 +118,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton5ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 360, 80, 140));
+        jPanel1.add(territoryButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 490, 80, 140));
 
         territoryButton6.setText("Troy");
         territoryButton6.addActionListener(new java.awt.event.ActionListener() {
@@ -123,7 +126,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton6ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 360, -1, 140));
+        jPanel1.add(territoryButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 430, -1, 140));
 
         territoryButton7.setText("Elysium");
         territoryButton7.addActionListener(new java.awt.event.ActionListener() {
@@ -131,7 +134,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton7ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 500, -1, 140));
+        jPanel1.add(territoryButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 580, -1, 140));
 
         territoryButton8.setText("Mycenae");
         territoryButton8.addActionListener(new java.awt.event.ActionListener() {
@@ -139,7 +142,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton8ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 500, -1, 140));
+        jPanel1.add(territoryButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 500, -1, 140));
 
         territoryButton9.setText("Rhodes");
         territoryButton9.addActionListener(new java.awt.event.ActionListener() {
@@ -147,7 +150,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton9ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 140, -1, 140));
+        jPanel1.add(territoryButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(605, 140, 80, 160));
 
         territoryButton10.setText("Corinth");
         territoryButton10.addActionListener(new java.awt.event.ActionListener() {
@@ -155,7 +158,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton10ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 280, 160, 60));
+        jPanel1.add(territoryButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 310, 190, 60));
 
         territoryButton11.setText("Crete");
         territoryButton11.addActionListener(new java.awt.event.ActionListener() {
@@ -163,7 +166,7 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton11ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 140, 80, 140));
+        jPanel1.add(territoryButton11, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 140, 80, 160));
 
         territoryButton12.setText("Olympia");
         territoryButton12.addActionListener(new java.awt.event.ActionListener() {
@@ -171,19 +174,19 @@ public class GameFrame extends javax.swing.JFrame {
                 territoryButton12ActionPerformed(evt);
             }
         });
-        jPanel1.add(territoryButton12, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 140, -1, 200));
+        jPanel1.add(territoryButton12, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 140, -1, 200));
 
         statusArea.setColumns(20);
         statusArea.setRows(5);
         jScrollPane1.setViewportView(statusArea);
 
-        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 160, 360, 120));
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 190, 360, 120));
 
         gameLogArea.setColumns(20);
         gameLogArea.setRows(5);
         jScrollPane2.setViewportView(gameLogArea);
 
-        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 290, 360, 110));
+        jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 320, 360, 110));
 
         actionButton.setText("Waiting");
         actionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -191,11 +194,12 @@ public class GameFrame extends javax.swing.JFrame {
                 actionButtonActionPerformed(evt);
             }
         });
-        jPanel1.add(actionButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(1155, 420, 120, 50));
+        jPanel1.add(actionButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(1120, 440, 210, 50));
+
+        diceLabel.setText("Attacker: [6, 5, 2]\nDefender: [4, 3]");
+        jPanel1.add(diceLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 90, 310, 100));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/background.png"))); // NOI18N
-        jLabel1.setMaximumSize(new java.awt.Dimension(1400, 800));
-        jLabel1.setMinimumSize(new java.awt.Dimension(1400, 800));
         jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1400, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -440,7 +444,9 @@ public class GameFrame extends javax.swing.JFrame {
 
     private void updateStatusArea() {
         statusArea.setText(
-                "Phase: " + currentPhase + "\n"
+                "You are: " + currentPlayer + "\n"
+                + "Current Turn: " + currentTurnPlayer + "\n"
+                + "Phase: " + currentPhase + "\n"
                 + "Remaining Draft Troops: " + remainingDraftTroops + "\n"
                 + "Selected Territory: " + selectedTerritory + "\n"
                 + "From: " + fromTerritory + "\n"
@@ -553,11 +559,7 @@ public class GameFrame extends javax.swing.JFrame {
     }
 
     public void handleServerResponse(String response) {
-        if (response.contains(":") && response.contains("|")) {
-            return;
-        }
-
-        appendGameLog(response);
+        appendCleanServerResponse(response);
 
         if (response.startsWith("DRAFT_NOT_FINISHED")) {
             appendGameLog("Önce bütün draft askerlerini yerleştirmelisin.");
@@ -587,6 +589,66 @@ public class GameFrame extends javax.swing.JFrame {
         updateStatusArea();
     }
 
+    private void appendCleanServerResponse(String response) {
+        if (response.startsWith("OPPONENT_DISCONNECTED")) {
+            return;
+        }
+
+        if (response.startsWith("DRAFT_SUCCESS")) {
+            appendGameLog(response.replace("DRAFT_SUCCESS ", ""));
+            return;
+        }
+
+        if (response.startsWith("ATTACK_RESULT")) {
+            updateDiceLabel(response);
+            appendGameLog(extractActionText(response, "ATTACK_RESULT"));
+            return;
+        }
+
+        if (response.startsWith("TERRITORY_CAPTURED")) {
+            updateDiceLabel(response);
+            appendGameLog(extractActionText(response, "TERRITORY_CAPTURED"));
+            return;
+        }
+
+        if (response.startsWith("PHASE_ATTACK")) {
+            appendGameLog(currentTurnPlayer + ": Attack phase started.");
+            return;
+        }
+
+        if (response.startsWith("PHASE_FORTIFY")) {
+            appendGameLog(currentTurnPlayer + ": Fortify phase started.");
+            return;
+        }
+
+        if (response.startsWith("FORTIFY_SUCCESS")) {
+            appendGameLog(response.replace("FORTIFY_SUCCESS ", ""));
+            return;
+        }
+
+        if (response.startsWith("TURN ")) {
+            appendGameLog(response);
+            return;
+        }
+
+        if (response.startsWith("DRAFT_NOT_FINISHED")) {
+            return;
+        }
+
+        appendGameLog(response);
+    }
+
+    private String extractActionText(String response, String prefix) {
+        String actionText = response.substring(prefix.length()).trim();
+        int diceIndex = actionText.indexOf("Attacker dice:");
+
+        if (diceIndex >= 0) {
+            actionText = actionText.substring(0, diceIndex).trim();
+        }
+
+        return actionText;
+    }
+
     public void updateGameFromServer(String gameData) {
         String[] parts = gameData.split(";", 4);
 
@@ -597,13 +659,20 @@ public class GameFrame extends javax.swing.JFrame {
 
         try {
             GamePhase serverPhase = GamePhase.valueOf(parts[0]);
-            String currentTurnPlayer = parts[1];
+            currentTurnPlayer = parts[1];
             int draftTroops = Integer.parseInt(parts[2]);
             String mapData = parts[3];
 
             currentPhase = serverPhase;
             remainingDraftTroops = draftTroops;
             clearSelection();
+
+            if (currentPhase == GamePhase.ATTACK) {
+                diceLabel.setVisible(true);
+            } else {
+                diceLabel.setText("Waiting for battle...");
+                diceLabel.setVisible(false);
+            }
 
             updateMapFromServer(mapData);
             updateActionButton(currentTurnPlayer);
@@ -634,9 +703,38 @@ public class GameFrame extends javax.swing.JFrame {
         }
     }
 
+    private void updateDiceLabel(String response) {
+        if (!response.contains("Attacker dice:") || !response.contains("Defender dice:")) {
+            return;
+        }
+
+        String attackerPart = response.substring(
+                response.indexOf("Attacker dice:"),
+                response.indexOf(" Defender dice:")
+        );
+
+        String defenderPart;
+
+        if (response.contains(" | ")) {
+            defenderPart = response.substring(
+                    response.indexOf("Defender dice:"),
+                    response.indexOf(" | ")
+            );
+        } else {
+            defenderPart = response.substring(response.indexOf("Defender dice:"));
+        }
+
+        diceLabel.setVisible(true);
+        diceLabel.setText("<html><center>⚔ Dice Battle ⚔<br>"
+                + attackerPart + "<br>"
+                + defenderPart
+                + "</center></html>");
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actionButton;
+    private javax.swing.JLabel diceLabel;
     private javax.swing.JTextArea gameLogArea;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
