@@ -36,9 +36,7 @@ public class StartFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBounds(new java.awt.Rectangle(0, 0, 0, 0));
-        setMaximumSize(new java.awt.Dimension(700, 800));
         setMinimumSize(new java.awt.Dimension(700, 800));
-        setPreferredSize(new java.awt.Dimension(700, 800));
         setResizable(false);
 
         jPanel1.setMaximumSize(new java.awt.Dimension(700, 800));
@@ -58,7 +56,7 @@ public class StartFrame extends javax.swing.JFrame {
 
         jTextField2.setBackground(new java.awt.Color(253, 245, 204));
         jTextField2.setFont(new java.awt.Font("Apple LiSung", 1, 18)); // NOI18N
-        jTextField2.setText("localhost");
+        jTextField2.setText("16.170.235.235");
         jTextField2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField2ActionPerformed(evt);
