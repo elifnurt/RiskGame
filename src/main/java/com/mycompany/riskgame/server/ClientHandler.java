@@ -13,6 +13,7 @@ public class ClientHandler extends Thread {
     private final GameEngine gameEngine;
     private String playerName;
     private PrintWriter out;
+    private boolean disconnectMessageSent = false;
 
     public ClientHandler(Socket clientSocket, GameEngine gameEngine) {
         this.clientSocket = clientSocket;
@@ -87,12 +88,15 @@ public class ClientHandler extends Thread {
                     }
                 }
             }
+            if (playerName != null && !disconnectMessageSent) {
+                ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
+                disconnectMessageSent = true;
+            }
 
         } catch (IOException e) {
-            System.out.println("Client disconnected unexpectedly.");
-
-            if (playerName != null) {
+            if (playerName != null && !disconnectMessageSent) {
                 ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
+                disconnectMessageSent = true;
             }
         } finally {
             if (out != null) {

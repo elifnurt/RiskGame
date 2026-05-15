@@ -546,6 +546,7 @@ public class GameFrame extends javax.swing.JFrame {
             });
 
             endFrame.setExitAction(() -> {
+                sendCommand("RESET_GAME");
                 System.exit(0);
             });
         });
@@ -563,8 +564,22 @@ public class GameFrame extends javax.swing.JFrame {
         } else if (response.equals("WAITING_FOR_PLAYERS")) {
             appendGameLog("İkinci oyuncu bekleniyor.");
         } else if (response.startsWith("OPPONENT_DISCONNECTED")) {
-            appendGameLog("Opponent disconnected. Please restart the game.");
-            actionButton.setEnabled(false);
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Opponent disconnected. Returning to start screen.",
+                    "Opponent Disconnected",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+
+            this.dispose();
+
+            StartFrame startFrame = new StartFrame();
+            startFrame.setTitle("Ancient Greek Risk Game");
+            startFrame.setLocationRelativeTo(null);
+            startFrame.setResizable(false);
+            startFrame.setVisible(true);
+
+            return;
         } else if (response.startsWith("GAME_OVER")) {
             showGameOverScreen(response);
         }
