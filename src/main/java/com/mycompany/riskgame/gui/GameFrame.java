@@ -14,18 +14,6 @@ import java.util.Map;
  * @author elifnur
  */
 public class GameFrame extends javax.swing.JFrame {
-    
-    public static void main(String[] args) {
-    java.awt.EventQueue.invokeLater(new Runnable() {
-        public void run() {
-            GameFrame frame = new GameFrame();
-            frame.setTitle("Risk Game - Preview");
-            frame.setVisible(true);
-            frame.startGameScreen();
-        }
-    });
-}
-
 
     private java.io.PrintWriter out;
     private GamePhase currentPhase = GamePhase.WAITING_FOR_PLAYERS;
@@ -84,7 +72,6 @@ public class GameFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBounds(new java.awt.Rectangle(0, 0, 0, 0));
         jPanel1.setMaximumSize(new java.awt.Dimension(1400, 800));
         jPanel1.setMinimumSize(new java.awt.Dimension(1400, 800));
         jPanel1.setPreferredSize(new java.awt.Dimension(1400, 800));
@@ -198,7 +185,7 @@ public class GameFrame extends javax.swing.JFrame {
 
         jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1030, 290, 360, 110));
 
-        actionButton.setText("jButton14");
+        actionButton.setText("Waiting");
         actionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 actionButtonActionPerformed(evt);
@@ -207,8 +194,6 @@ public class GameFrame extends javax.swing.JFrame {
         jPanel1.add(actionButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(1155, 420, 120, 50));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/background.png"))); // NOI18N
-        jLabel1.setText("jLabel1");
-        jLabel1.setBounds(new java.awt.Rectangle(0, 0, 0, 0));
         jLabel1.setMaximumSize(new java.awt.Dimension(1400, 800));
         jLabel1.setMinimumSize(new java.awt.Dimension(1400, 800));
         jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1400, -1));
@@ -330,7 +315,23 @@ public class GameFrame extends javax.swing.JFrame {
         toTerritory = null;
     }
 
+    private boolean isMyTerritory(String territoryName) {
+        String owner = territoryOwners.get(territoryName);
+        return currentPlayer.equals(owner);
+    }
+
+    private boolean isMyTurn() {
+        return actionButton.isEnabled()
+                && !actionButton.getText().equals("Opponent Turn")
+                && !actionButton.getText().equals("Waiting");
+    }
+
     private void handleTerritoryClick(String territoryName) {
+
+        if (!isMyTurn()) {
+            appendGameLog("It is not your turn.");
+            return;
+        }
 
         selectedTerritory = territoryName;
 
@@ -340,9 +341,7 @@ public class GameFrame extends javax.swing.JFrame {
 
             if (fromTerritory == null) {
 
-                String owner = territoryOwners.get(territoryName);
-
-                if (!currentPlayer.equals(owner)) {
+                if (!isMyTerritory(territoryName)) {
                     appendGameLog("You must select your own territory to attack from.");
                     return;
                 }
@@ -368,12 +367,11 @@ public class GameFrame extends javax.swing.JFrame {
             }
         } else if (currentPhase == GamePhase.FORTIFY) {
             if (fromTerritory == null) {
-                String owner = territoryOwners.get(territoryName);
-
-                if (!currentPlayer.equals(owner)) {
+                if (!isMyTerritory(territoryName)) {
                     appendGameLog("You must select your own territory to fortify from.");
                     return;
                 }
+
                 int troops = troopCounts.getOrDefault(territoryName, 0);
 
                 if (troops <= 1) {
@@ -384,9 +382,7 @@ public class GameFrame extends javax.swing.JFrame {
                 appendGameLog("Fortify from: " + fromTerritory);
 
             } else {
-                String owner = territoryOwners.get(territoryName);
-
-                if (!currentPlayer.equals(owner)) {
+                if (!isMyTerritory(territoryName)) {
                     appendGameLog("You must select your own territory to fortify to.");
                     return;
                 }
@@ -433,10 +429,7 @@ public class GameFrame extends javax.swing.JFrame {
             appendGameLog("All draft troops placed. Click Go To Attack Phase.");
             return;
         }
-
-        String owner = territoryOwners.get(territoryName);
-
-        if (!currentPlayer.equals(owner)) {
+        if (!isMyTerritory(territoryName)) {
             appendGameLog("You can only draft troops to your own territories.");
             return;
         }
@@ -533,17 +526,47 @@ public class GameFrame extends javax.swing.JFrame {
         gameLogArea.setCaretPosition(gameLogArea.getDocument().getLength());
     }
 
+    private void showGameOverScreen(String message) {
+
+        String winnerName = message.replace("GAME_OVER Winner: ", "").trim();
+
+        javax.swing.SwingUtilities.invokeLater(() -> {
+
+            this.dispose();
+
+            EndFrame endFrame = new EndFrame();
+
+            endFrame.setWinner(winnerName);
+
+            endFrame.setLocationRelativeTo(null);
+            endFrame.setVisible(true);
+
+            endFrame.setReplayAction(() -> {
+                sendCommand("RESET_GAME");
+            });
+
+            endFrame.setExitAction(() -> {
+                System.exit(0);
+            });
+        });
+    }
+
     public void handleServerResponse(String response) {
+        if (response.contains(":") && response.contains("|")) {
+            return;
+        }
+
         appendGameLog(response);
 
         if (response.startsWith("DRAFT_NOT_FINISHED")) {
             appendGameLog("Önce bütün draft askerlerini yerleştirmelisin.");
         } else if (response.equals("WAITING_FOR_PLAYERS")) {
             appendGameLog("İkinci oyuncu bekleniyor.");
-        } else if (response.equals("NOT_YOUR_TURN")) {
-            appendGameLog("Şu an senin sıran değil.");
+        } else if (response.startsWith("OPPONENT_DISCONNECTED")) {
+            appendGameLog("Opponent disconnected. Please restart the game.");
+            actionButton.setEnabled(false);
         } else if (response.startsWith("GAME_OVER")) {
-            javax.swing.JOptionPane.showMessageDialog(this, response);
+            showGameOverScreen(response);
         }
 
         updateStatusArea();

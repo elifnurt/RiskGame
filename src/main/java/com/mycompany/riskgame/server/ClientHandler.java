@@ -50,6 +50,17 @@ public class ClientHandler extends Thread {
                 synchronized (gameEngine) {
 
                     response = gameEngine.handleCommand(message, playerName);
+
+                    if (response.equals("GAME_RESET")) {
+                        ServerMain.broadcast("RESPONSE:GAME_RESET");
+                        continue;
+                    }
+
+                    if (response.startsWith("GAME_OVER")) {
+                        ServerMain.broadcast("RESPONSE:" + response);
+                        continue;
+                    }
+
                     out.println("RESPONSE:" + response);
 
                     if (message.startsWith("JOIN ")
@@ -62,11 +73,10 @@ public class ClientHandler extends Thread {
                         continue;
                     }
 
-                    if (message.equals("MAP")
+                    if (message.equals("RESET_GAME")
                             || message.startsWith("JOIN ")
                             || message.startsWith("DRAFT ")
                             || message.startsWith("ATTACK ")
-                            || message.startsWith("BLITZ ")
                             || message.startsWith("FORTIFY ")
                             || message.equals("NEXT_PHASE")
                             || message.equals("END_TURN")) {
@@ -80,6 +90,10 @@ public class ClientHandler extends Thread {
 
         } catch (IOException e) {
             System.out.println("Client disconnected unexpectedly.");
+
+            if (playerName != null) {
+                ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
+            }
         } finally {
             if (out != null) {
                 ServerMain.removeClient(out);

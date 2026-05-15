@@ -42,15 +42,18 @@ public class GameEngine {
         if (message.startsWith("JOIN ")) {
             return handleJoin(message);
         }
-
-        if (message.equals("MAP")) {
-            return handleMap();
+        
+        if (message.equals("RESET_GAME")) {
+            return handleResetGame();
         }
+
         if (gameOver) {
             return "GAME_ALREADY_OVER";
+
         }
 
-        if (playerName == null) {
+        if (playerName
+                == null) {
             return "PLEASE_JOIN_FIRST";
         }
         if (currentPhase == GamePhase.WAITING_FOR_PLAYERS) {
@@ -67,26 +70,28 @@ public class GameEngine {
             return "NOT_YOUR_TURN";
         }
 
-        if (message.equals("END_TURN")) {
+        if (message.equals(
+                "END_TURN")) {
             return handleEndTurn();
         }
-        if (message.equals("NEXT_PHASE")) {
+
+        if (message.equals(
+                "NEXT_PHASE")) {
             return handleNextPhase();
         }
 
-        if (message.startsWith("DRAFT ")) {
+        if (message.startsWith(
+                "DRAFT ")) {
             return handleDraft(message);
         }
 
-        if (message.startsWith("ATTACK ")) {
+        if (message.startsWith(
+                "ATTACK ")) {
             return handleAttack(message);
         }
 
-        if (message.startsWith("BLITZ ")) {
-            return handleBlitz(message);
-        }
-
-        if (message.startsWith("FORTIFY ")) {
+        if (message.startsWith(
+                "FORTIFY ")) {
             return handleFortify(message);
         }
 
@@ -311,48 +316,6 @@ public class GameEngine {
 
     }
 
-    private String handleBlitz(String message) {
-
-        if (currentPhase != GamePhase.ATTACK) {
-            return "NOT_ATTACK_PHASE";
-        }
-
-        String[] parts = message.split(" ");
-
-        if (parts.length < 3) {
-            return "INVALID_COMMAND";
-        }
-
-        while (true) {
-
-            String attackCommand = "ATTACK " + parts[1] + " " + parts[2];
-            String result = handleAttack(attackCommand);
-
-            if (result.equals("TERRITORY_CAPTURED")) {
-                return "BLITZ_SUCCESS";
-            }
-
-            if (result.startsWith("GAME_OVER")) {
-                return result;
-            }
-
-            Territory attacker = gameMap.findTerritoryByName(parts[1]);
-            Territory defender = gameMap.findTerritoryByName(parts[2]);
-
-            if (attacker == null || defender == null) {
-                return "INVALID_TERRITORY";
-            }
-
-            if (attacker.getOwner().equals(defender.getOwner())) {
-                return "BLITZ_SUCCESS";
-            }
-
-            if (attacker.getTroops() < 2) {
-                return "BLITZ_FAILED";
-            }
-        }
-    }
-
     private String handleFortify(String message) {
 
         if (currentPhase != GamePhase.FORTIFY) {
@@ -416,7 +379,7 @@ public class GameEngine {
         return "FORTIFY_SUCCESS";
     }
 
-    private String handleMap() {
+    private String buildMapData() {
         StringBuilder sb = new StringBuilder();
         for (Territory t : gameMap.getTerritories()) {
             sb.append(t.getName()).append(":");
@@ -491,6 +454,17 @@ public class GameEngine {
         return true;
     }
 
+    private String handleResetGame() {
+        gameMap = new GameMap();
+        turnManager = new TurnManager();
+        currentPhase = GamePhase.WAITING_FOR_PLAYERS;
+        remainingDraftTroops = 0;
+        fortifyUsed = false;
+        gameOver = false;
+
+        return "GAME_RESET";
+    }
+
     public String getGameUpdate() {
         String currentPlayerName = "NONE";
 
@@ -501,6 +475,6 @@ public class GameEngine {
         return currentPhase + ";"
                 + currentPlayerName + ";"
                 + remainingDraftTroops + ";"
-                + handleMap();
+                + buildMapData();
     }
 }

@@ -38,7 +38,11 @@ public class Territory {
     }
 
     public void removeTroops(int amount) {
-        troops -= amount;
+        if (amount <= 0) {
+            return;
+        }
+
+        troops = Math.max(0, troops - amount);
     }
 
     public void addNeighbor(Territory territory) {
