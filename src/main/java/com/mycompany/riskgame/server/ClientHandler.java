@@ -51,14 +51,17 @@ public class ClientHandler extends Thread {
                 synchronized (gameEngine) {
 
                     response = gameEngine.handleCommand(message, playerName);
+                    logCommand(message, response);
 
                     if (response.equals("GAME_RESET")) {
                         disconnectMessageSent = true;
+                        System.out.println("[RESET] Game reset requested.");
                         ServerMain.broadcast("RESPONSE:GAME_RESET");
                         continue;
                     }
 
                     if (response.startsWith("GAME_OVER")) {
+                        System.out.println("[GAME_OVER] " + response);
                         ServerMain.broadcast("RESPONSE:" + response);
                         continue;
                     }
@@ -122,8 +125,24 @@ public class ClientHandler extends Thread {
                 gameEngine.resetGame();
             }
 
+            System.out.println("[DISCONNECT] " + playerName + " disconnected. Game reset.");
             ServerMain.broadcast("RESPONSE:OPPONENT_DISCONNECTED " + playerName);
             disconnectMessageSent = true;
         }
+    }
+
+    private void logCommand(String message, String response) {
+        String displayName = playerName;
+
+        if (displayName == null && message.startsWith("JOIN ")) {
+            displayName = message.substring(5).trim();
+        }
+
+        if (displayName == null || displayName.isEmpty()) {
+            displayName = "UNKNOWN";
+        }
+
+        System.out.println("[CLIENT] " + displayName + " -> " + message);
+        System.out.println("[SERVER] " + response);
     }
 }
